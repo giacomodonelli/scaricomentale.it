@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scarico mentale</title>
+<style>
+:root { --sfondo: #EEEBFB; --scheda: #FFFFFF; --testo: #1E1B3A; --secondario: #5D5A78; --accento: #5A4BD1; }
+@media (prefers-color-scheme: dark) {
+  :root { --sfondo: #16142B; --scheda: #221F3D; --testo: #F1EFFB; --secondario: #B5B1D3; --accento: #A99CFF; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--sfondo); color: var(--testo); font: 17px/1.55 -apple-system, BlinkMacSystemFont,
+  "Segoe UI", Roboto, sans-serif; }
+main { max-width: 680px; margin: 0 auto; padding: 48px 16px 64px; }
+header { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
+header img { width: 56px; height: 56px; border-radius: 14px; }
+header a { color: inherit; text-decoration: none; font-weight: 700; font-size: 22px; }
+h1 { font-size: 32px; line-height: 1.2; margin: 0 0 16px; }
+h2 { font-size: 19px; margin: 0 0 8px; }
+section { background: var(--scheda); border-radius: 20px; padding: 20px 22px; margin: 16px 0; }
+section p { margin: 8px 0 0; }
+p { margin: 0 0 14px; }
+.secondario { color: var(--secondario); }
+a { color: var(--accento); }
+footer { margin-top: 40px; font-size: 15px; color: var(--secondario); }
+
+.attesa { min-height: 80vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 18px; }
+.tasto { display: inline-block; padding: 14px 28px; border-radius: 999px; background: var(--accento); color: #fff;
+  text-decoration: none; font-weight: 600; }
+</style>
+<script>
+var s = new URLSearchParams(location.search).get("s") || "";
+var app = "scaricomentale://apri" + (/^\d{4}-\d{2}-\d{2}$/.test(s) ? "?s=" + s : "");
+document.addEventListener("DOMContentLoaded", function () { document.getElementById("apri").href = app; });
+location.href = app;
+</script>
+</head>
+<body><main class="attesa"><h2>Apro Scarico mentale…</h2>
+<a id="apri" class="tasto" href="scaricomentale://apri">Apri l'app</a>
+<p class="secondario">Se non si apre da sola, tocca il tasto.</p></main></body>
+</html>
