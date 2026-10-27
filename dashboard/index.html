@@ -1,0 +1,518 @@
+<!doctype html>
+<!-- La dashboard (spec docs/superpowers/specs/2026-10-27-dashboard-design.md): numeri e comunicazioni nell'app.
+     Si entra con email e codice, come nell'app; i dati arrivano solo a chi è in amministratori (controllo nel database).
+     sito/genera.ts la copia in dashboard/index.html. -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Dashboard · Scarico mentale</title>
+<link rel="icon" href="/icona.png">
+<style>
+:root { --sfondo: #EEEBFB; --scheda: #FFFFFF; --testo: #1E1B3A; --secondario: #5D5A78; --accento: #5A4BD1;
+  --linea: rgba(30, 27, 58, 0.12); --errore: #B3261E; }
+@media (prefers-color-scheme: dark) {
+  :root { --sfondo: #16142B; --scheda: #221F3D; --testo: #F1EFFB; --secondario: #B5B1D3; --accento: #A99CFF;
+    --linea: rgba(241, 239, 251, 0.14); --errore: #FF8A80; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--sfondo); color: var(--testo); font: 16px/1.5 -apple-system, BlinkMacSystemFont,
+  "Segoe UI", Roboto, sans-serif; }
+main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 64px; }
+header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+header img { width: 40px; height: 40px; border-radius: 10px; }
+header strong { font-size: 19px; margin-right: auto; }
+nav { display: flex; gap: 16px; align-items: center; }
+a, .link { color: var(--accento); background: none; border: 0; padding: 0; font: inherit; cursor: pointer;
+  text-decoration: none; }
+h2 { font-size: 24px; margin: 32px 0 4px; }
+h3 { font-size: 15px; margin: 0 0 8px; color: var(--secondario); font-weight: 600; }
+p { margin: 0 0 12px; }
+.secondario { color: var(--secondario); }
+.errore { color: var(--errore); }
+.scheda { background: var(--scheda); border-radius: 18px; padding: 18px 20px; }
+.stretta { max-width: 420px; margin: 10vh auto 0; }
+label { display: block; font-size: 14px; font-weight: 600; margin: 12px 0 4px; }
+label .secondario { font-weight: 400; }
+input, select, textarea { width: 100%; font: inherit; color: var(--testo); background: var(--sfondo);
+  border: 1px solid var(--linea); border-radius: 10px; padding: 9px 11px; }
+textarea { min-height: 110px; resize: vertical; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--accento); outline-offset: -1px; }
+.primario { background: var(--accento); color: var(--scheda); border: 0; border-radius: 999px; padding: 10px 20px;
+  font: inherit; font-weight: 600; cursor: pointer; }
+.contorno { background: none; color: var(--accento); border: 1px solid var(--accento); border-radius: 999px;
+  padding: 6px 14px; font: inherit; font-size: 14px; cursor: pointer; }
+.tasti { display: flex; gap: 12px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+.tessere { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 12px; }
+.tessera .valore { font-size: 30px; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.tessera .nota { font-size: 14px; color: var(--secondario); margin: 4px 0 0; }
+.griglia { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 12px; }
+figure { margin: 0; }
+svg { display: block; width: 100%; height: auto; overflow: visible; }
+.barra { fill: var(--accento); }
+.zona { fill: transparent; }
+.zona:hover { fill: var(--linea); }
+.asse { stroke: var(--linea); stroke-width: 1; }
+.etichetta { fill: var(--secondario); font-size: 12px; }
+details { margin-top: 8px; font-size: 14px; }
+summary { color: var(--accento); cursor: pointer; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+td, th { text-align: left; padding: 6px 0; border-bottom: 1px solid var(--linea); }
+td:last-child, th:last-child { text-align: right; }
+.suggerimento { position: fixed; pointer-events: none; background: var(--testo); color: var(--sfondo); font-size: 13px;
+  padding: 5px 9px; border-radius: 8px; white-space: nowrap; z-index: 10; }
+.modulo { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; margin-top: 12px; }
+@media (max-width: 760px) { .modulo { grid-template-columns: minmax(0, 1fr); } }
+.coppia { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.anteprima { background: var(--sfondo); border-radius: 22px; padding: 10px 20px 22px; align-self: start;
+  position: sticky; top: 16px; }
+.anteprima .grabber { width: 36px; height: 5px; border-radius: 3px; background: var(--linea); margin: 0 auto 18px; }
+.anteprima .titolo { font-size: 22px; font-weight: 700; margin: 0 0 8px; overflow-wrap: anywhere; }
+.anteprima .testo { color: var(--secondario); white-space: pre-wrap; overflow-wrap: anywhere; }
+.anteprima .finto { display: block; text-align: center; border-radius: 999px; padding: 12px; font-weight: 600;
+  margin-top: 8px; }
+.anteprima .finto.pieno { background: var(--accento); color: var(--scheda); }
+.anteprima .finto.vuoto { color: var(--accento); }
+.elenco { display: grid; gap: 12px; margin-top: 12px; }
+.comunicazione h4 { margin: 0 0 4px; font-size: 17px; overflow-wrap: anywhere; }
+.comunicazione .testo { color: var(--secondario); white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 8px; }
+.comunicazione .dettagli { font-size: 14px; color: var(--secondario); margin: 0; }
+.stato { display: inline-block; font-size: 13px; font-weight: 600; border-radius: 999px; padding: 2px 10px;
+  border: 1px solid currentColor; margin-right: 6px; }
+.spenta { opacity: 0.6; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+</head>
+<body>
+<main>
+<header>
+  <img src="/icona.png" alt="">
+  <strong>Scarico mentale · Dashboard</strong>
+  <nav id="menu" hidden>
+    <a href="#numeri">Numeri</a>
+    <a href="#comunicazioni">Comunicazioni</a>
+    <button class="link" id="esci">Esci</button>
+  </nav>
+</header>
+
+<section id="accesso" class="scheda stretta" hidden>
+  <h3>Accesso</h3>
+  <form id="modulo-email">
+    <label for="email">Email dell'account</label>
+    <input id="email" type="email" autocomplete="email" required>
+    <div class="tasti"><button class="primario">Mandami il codice</button></div>
+  </form>
+  <form id="modulo-codice" hidden>
+    <p class="secondario">Ti abbiamo mandato un codice a <span id="email-inviata"></span>.</p>
+    <label for="codice">Codice</label>
+    <input id="codice" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+    <div class="tasti"><button class="primario">Entra</button><button type="button" class="link" id="altra-email">Usa
+      un'altra email</button></div>
+  </form>
+  <p id="esito-accesso" class="errore"></p>
+</section>
+
+<section id="negato" class="scheda stretta" hidden>
+  <p>L'account <strong id="email-negata"></strong> non ha accesso alla dashboard.</p>
+  <p class="secondario">Si aggiunge una riga con l'email nella tabella amministratori.</p>
+</section>
+
+<div id="pannello" hidden>
+  <h2 id="numeri">Numeri</h2>
+  <p class="secondario">Senza la famiglia finta della revisione di Apple. Giorni di Roma. <button class="link"
+    id="aggiorna">Aggiorna</button></p>
+  <div class="tessere" id="tessere"></div>
+  <div class="griglia">
+    <figure class="scheda" id="grafico-messaggi"></figure>
+    <figure class="scheda" id="grafico-costo"></figure>
+  </div>
+  <div class="griglia">
+    <div class="scheda"><h3>Messaggi per canale, 30 giorni</h3><table id="canali"></table></div>
+    <div class="scheda"><h3>Consumi dell'LLM per tipo, 30 giorni</h3><table id="tipi"></table></div>
+  </div>
+
+  <h2 id="comunicazioni">Comunicazioni</h2>
+  <p class="secondario">Compaiono nell'app all'apertura, una volta sola per persona, mai nel primo giorno con l'app.</p>
+  <div class="tasti"><button class="primario" id="nuova">Nuova comunicazione</button></div>
+
+  <form id="modulo" class="scheda" hidden novalidate>
+    <h3 id="modulo-titolo">Nuova comunicazione</h3>
+    <div class="modulo">
+      <div>
+        <label for="c-titolo">Titolo <span class="secondario" id="conta-titolo"></span></label>
+        <input id="c-titolo" maxlength="80" required>
+        <label for="c-testo">Testo <span class="secondario" id="conta-testo"></span></label>
+        <textarea id="c-testo" maxlength="600" required></textarea>
+        <div class="coppia">
+          <div>
+            <label for="c-tipo">Tipo</label>
+            <select id="c-tipo"><option value="servizio">Servizio</option><option value="commerciale">Commerciale
+              (solo gratuito)</option></select>
+          </div>
+          <div>
+            <label for="c-piano">Piano</label>
+            <select id="c-piano"><option value="">Tutti</option><option value="free">Gratuito</option>
+              <option value="premium">Premium</option></select>
+          </div>
+        </div>
+        <div class="coppia">
+          <div>
+            <label for="c-dalla">Dalla versione <span class="secondario">(compresa)</span></label>
+            <input id="c-dalla" placeholder="per esempio 1.9.0">
+          </div>
+          <div>
+            <label for="c-fino">Fino alla versione <span class="secondario">(compresa)</span></label>
+            <input id="c-fino" placeholder="vuoto: tutte">
+          </div>
+        </div>
+        <div class="coppia">
+          <div>
+            <label for="c-dal">Dal</label>
+            <input id="c-dal" type="datetime-local">
+          </div>
+          <div>
+            <label for="c-al">Al <span class="secondario">(facoltativo)</span></label>
+            <input id="c-al" type="datetime-local">
+          </div>
+        </div>
+        <div class="coppia">
+          <div>
+            <label for="c-tasto">Tasto <span class="secondario">(facoltativo)</span></label>
+            <input id="c-tasto" maxlength="30" placeholder="per esempio Come funziona">
+          </div>
+          <div>
+            <label for="c-link">Apre</label>
+            <input id="c-link" list="pagine" placeholder="/come-funziona o https://…">
+            <datalist id="pagine"></datalist>
+          </div>
+        </div>
+        <label><input id="c-attiva" type="checkbox" style="width: auto; margin-right: 6px;">Attiva</label>
+        <p class="secondario" id="nota-modifica" hidden>Chi l'ha già vista non la rivede anche se la cambi.</p>
+        <p class="errore" id="esito-modulo"></p>
+        <div class="tasti">
+          <button class="primario">Salva</button>
+          <button type="button" class="link" id="annulla">Annulla</button>
+        </div>
+      </div>
+      <div class="anteprima" aria-label="Anteprima nell'app">
+        <div class="grabber"></div>
+        <p class="titolo" id="a-titolo"></p>
+        <p class="testo" id="a-testo"></p>
+        <div id="a-tasti"></div>
+      </div>
+    </div>
+  </form>
+  <div class="elenco" id="elenco"></div>
+</div>
+</main>
+<div class="suggerimento" id="suggerimento" hidden></div>
+
+<script>
+// La chiave pubblica del progetto, la stessa dell'app: da sola non apre niente, i dati li proteggono le regole del
+// database.
+const db = supabase.createClient('https://yadygffzwxpnvlktzqna.supabase.co',
+  'sb_publishable_XLN4tU9fFnSJxzCbdELoVQ_RnjSY0li');
+
+const $ = (id) => document.getElementById(id);
+function el(tag, props, ...figli) {
+  const e = Object.assign(document.createElement(tag), props);
+  for (const f of figli) if (f != null) e.append(f);
+  return e;
+}
+function svg(tag, attributi) {
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [k, v] of Object.entries(attributi)) e.setAttribute(k, v);
+  return e;
+}
+
+const intero = new Intl.NumberFormat('it-IT');
+const dollari = (v) => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'USD', minimumFractionDigits: 2,
+  maximumFractionDigits: v > 0 && v < 1 ? 4 : 2 }).format(v);
+const giorno = (d) => new Date(d + 'T12:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
+const dataOra = (iso) => new Date(iso).toLocaleString('it-IT', { day: 'numeric', month: 'short', year: 'numeric',
+  hour: '2-digit', minute: '2-digit' });
+// datetime-local lavora nell'ora del browser, il database in UTC.
+function perCampo(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 16);
+}
+
+const CANALI = { vocale_app: "Vocale nell'app", testo: "Scritto nell'app", condivisione: 'Foto, documenti, condivisioni',
+  whatsapp: 'WhatsApp' };
+const TIPI = { vocale: 'Messaggi a voce', testo: 'Messaggi scritti', profilo: 'Racconti del profilo',
+  scuole: 'Ricerca scuole', scuole_web: 'Scuole dal web', lettura: 'Foto e PDF letti' };
+const PIANI = { free: 'Gratuito', premium: 'Premium' };
+const PAGINE = { '/come-funziona': 'Come funziona', '/per-iniziare': 'Per iniziare', '/abbonamento': 'Abbonamento',
+  '/impostazioni': 'Impostazioni', '/invita': 'Invita', '/calendario': 'Calendario', '/da-fare': 'Da fare',
+  '/famiglia': 'Famiglia' };
+for (const [valore, nome] of Object.entries(PAGINE)) $('pagine').append(el('option', { value: valore, label: nome }));
+
+// Accesso: email e codice, come nell'app; nessun account nuovo da qui.
+let emailInviata = '';
+$('modulo-email').onsubmit = async (e) => {
+  e.preventDefault();
+  $('esito-accesso').textContent = '';
+  emailInviata = $('email').value.trim().toLowerCase();
+  const { error } = await db.auth.signInWithOtp({ email: emailInviata, options: { shouldCreateUser: false } });
+  if (error) {
+    $('esito-accesso').textContent = /signup|not found/i.test(error.message)
+      ? 'Questa email non ha un account.' : 'Il codice non è partito: ' + error.message;
+    return;
+  }
+  $('email-inviata').textContent = emailInviata;
+  $('modulo-email').hidden = true;
+  $('modulo-codice').hidden = false;
+  $('codice').focus();
+};
+$('modulo-codice').onsubmit = async (e) => {
+  e.preventDefault();
+  const { error } = await db.auth.verifyOtp({ email: emailInviata, token: $('codice').value.trim(), type: 'email' });
+  if (error) $('esito-accesso').textContent = 'Il codice non va o è scaduto.';
+};
+$('altra-email').onclick = () => {
+  $('modulo-codice').hidden = true;
+  $('modulo-email').hidden = false;
+  $('esito-accesso').textContent = '';
+};
+$('esci').onclick = () => db.auth.signOut();
+
+let utente = null;
+db.auth.onAuthStateChange((_evento, sessione) => {
+  const nuovo = sessione?.user ?? null;
+  if (nuovo?.id === utente?.id && nuovo) return; // rinnovo del token: niente da ridisegnare
+  utente = nuovo;
+  setTimeout(mostra, 0); // fuori dal callback, come chiede supabase-js
+});
+
+async function mostra() {
+  $('accesso').hidden = $('negato').hidden = $('pannello').hidden = $('menu').hidden = true;
+  if (!utente) {
+    $('modulo-email').hidden = false;
+    $('modulo-codice').hidden = true;
+    $('codice').value = '';
+    $('accesso').hidden = false;
+    return;
+  }
+  $('menu').hidden = false;
+  const { data: ammesso } = await db.rpc('sono_amministratore');
+  if (!ammesso) {
+    $('email-negata').textContent = utente.email;
+    $('negato').hidden = false;
+    return;
+  }
+  $('pannello').hidden = false;
+  caricaNumeri();
+  caricaComunicazioni();
+}
+$('aggiorna').onclick = () => { caricaNumeri(); caricaComunicazioni(); };
+
+// Numeri
+function tessera(titolo, valore, nota) {
+  return el('div', { className: 'scheda tessera' }, el('h3', { textContent: titolo }),
+    el('div', { className: 'valore', textContent: valore }), el('p', { className: 'nota', textContent: nota }));
+}
+
+async function caricaNumeri() {
+  const { data: n, error } = await db.rpc('dashboard_numeri');
+  if (error) {
+    $('tessere').replaceChildren(el('p', { className: 'errore', textContent: 'Numeri non disponibili: ' + error.message }));
+    return;
+  }
+  const { famiglie: f, abbonamenti: a, persone: p, messaggi: m, consumi: c } = n;
+  $('tessere').replaceChildren(
+    tessera('Famiglie', intero.format(f.totale),
+      `${f.premium} premium (${f.omaggio} in omaggio) · ${f.nuove_7} nuove in 7 giorni, ${f.nuove_30} in 30`),
+    tessera('Famiglie attive, 7 giorni', intero.format(f.attive_7), `con almeno un messaggio · ${f.attive_30} in 30 giorni`),
+    tessera('Messaggi oggi', intero.format(m.oggi), `${intero.format(m.giorni_7)} in 7 giorni · ` +
+      `${intero.format(m.giorni_30)} in 30` + (m.errori_7 ? ` · ${m.errori_7} in errore in 7 giorni` : '')),
+    tessera('Costo LLM, 30 giorni', dollari(c.costo_usd_30),
+      `${dollari(c.costo_usd_7)} in 7 giorni · ${dollari(c.costo_medio_usd)} a messaggio`),
+    tessera('Abbonamenti attivi', intero.format(a.attivi), `${a.in_prova} in prova · ${a.rinnovo_spento} con il rinnovo spento`),
+    tessera('Adulti con l\'app', intero.format(p.adulti_app),
+      `${p.adulti_senza_app} senza app · ${p.figli} figli · ${p.whatsapp} con WhatsApp`),
+  );
+  grafico($('grafico-messaggi'), 'Messaggi al giorno, 30 giorni', n.giorni, 'messaggi', (v) => intero.format(v));
+  grafico($('grafico-costo'), 'Costo LLM al giorno (USD), 30 giorni', n.giorni, 'costo_usd', dollari);
+  tabella($('canali'), Object.entries(m.canali_30).map(([k, v]) => [CANALI[k] ?? k, intero.format(v)]), ['Canale', 'Messaggi']);
+  tabella($('tipi'), Object.entries(c.tipi_30).map(([k, v]) => [TIPI[k] ?? k, `${intero.format(v.n)} · ${dollari(v.costo_usd)}`]),
+    ['Tipo', 'Volte · costo']);
+}
+
+function tabella(t, righe, intestazione) {
+  t.replaceChildren(el('tr', {}, ...intestazione.map((h) => el('th', { textContent: h }))),
+    ...(righe.length ? righe : [['Niente in 30 giorni', '']]).map((r) => el('tr', {}, ...r.map((v) => el('td', { textContent: v })))));
+}
+
+// Barre di una sola serie: una per giorno, la zona sotto il puntatore si accende e mostra giorno e valore.
+function grafico(figura, titolo, giorni, chiave, formato) {
+  const L = 600, A = 160, base = A - 22, cima = 18, passo = L / giorni.length;
+  const max = Math.max(...giorni.map((g) => Number(g[chiave])));
+  const disegno = svg('svg', { viewBox: `0 0 ${L} ${A}`, role: 'img', 'aria-label': titolo });
+  disegno.append(svg('line', { x1: 0, x2: L, y1: base, y2: base, class: 'asse' }));
+  giorni.forEach((g, i) => {
+    const v = Number(g[chiave]);
+    const x = i * passo;
+    const zona = svg('rect', { x, y: 0, width: passo, height: base, class: 'zona' });
+    zona.addEventListener('pointerenter', () => suggerisci(`${giorno(g.giorno)} · ${formato(v)}`));
+    zona.addEventListener('pointermove', posiziona);
+    zona.addEventListener('pointerleave', () => { $('suggerimento').hidden = true; });
+    disegno.append(zona);
+    if (v > 0) {
+      const h = Math.max(2, (base - cima) * v / max), w = passo - 2, r = Math.min(4, w / 2, h), y = base - h, x0 = x + 1;
+      disegno.append(svg('path', { class: 'barra', 'pointer-events': 'none',
+        d: `M${x0},${base}V${y + r}Q${x0},${y} ${x0 + r},${y}H${x0 + w - r}Q${x0 + w},${y} ${x0 + w},${y + r}V${base}Z` }));
+    }
+  });
+  const scritta = (x, y, testo, ancora) => {
+    const t = svg('text', { x, y, class: 'etichetta', 'text-anchor': ancora });
+    t.textContent = testo;
+    return t;
+  };
+  disegno.append(scritta(0, A - 4, giorno(giorni[0].giorno), 'start'), scritta(L, A - 4, 'oggi', 'end'),
+    scritta(0, 12, max > 0 ? `massimo ${formato(max)}` : 'ancora niente', 'start'));
+  const righe = giorni.slice().reverse().map((g) => [giorno(g.giorno), formato(Number(g[chiave]))]);
+  const tab = el('table');
+  tabella(tab, righe, ['Giorno', '']);
+  figura.replaceChildren(el('h3', { textContent: titolo }), disegno,
+    el('details', {}, el('summary', { textContent: 'Vedi i numeri' }), tab));
+}
+function suggerisci(testo) {
+  $('suggerimento').textContent = testo;
+  $('suggerimento').hidden = false;
+}
+function posiziona(e) {
+  const s = $('suggerimento');
+  s.style.left = Math.min(e.clientX + 12, innerWidth - s.offsetWidth - 8) + 'px';
+  s.style.top = e.clientY - 34 + 'px';
+}
+
+// Comunicazioni
+let inModifica = null; // id della comunicazione aperta nel modulo, null per una nuova
+
+function statoDi(c) {
+  const adesso = Date.now();
+  if (!c.attiva) return 'Spenta';
+  if (new Date(c.dal) > adesso) return 'Programmata';
+  if (c.al && new Date(c.al) <= adesso) return 'Finita';
+  return 'In corso';
+}
+function pubblicoDi(c) {
+  const parti = [c.piano ? PIANI[c.piano] : 'Tutti i piani'];
+  if (c.dalla_versione) parti.push('dalla ' + c.dalla_versione);
+  if (c.fino_alla_versione) parti.push('fino alla ' + c.fino_alla_versione);
+  return parti.join(', ');
+}
+
+async function caricaComunicazioni() {
+  const { data, error } = await db.from('comunicazioni').select('*, comunicazioni_viste(count)')
+    .order('dal', { ascending: false });
+  if (error) {
+    $('elenco').replaceChildren(el('p', { className: 'errore', textContent: 'Comunicazioni non disponibili: ' + error.message }));
+    return;
+  }
+  if (!data.length) {
+    $('elenco').replaceChildren(el('p', { className: 'secondario', textContent: 'Nessuna comunicazione per ora.' }));
+    return;
+  }
+  $('elenco').replaceChildren(...data.map((c) => {
+    const stato = statoDi(c);
+    const viste = c.comunicazioni_viste?.[0]?.count ?? 0;
+    const date = 'dal ' + dataOra(c.dal) + (c.al ? ' al ' + dataOra(c.al) : '');
+    const tasto = c.tasto ? ` · tasto «${c.tasto}» → ${c.link}` : '';
+    return el('article', { className: 'scheda comunicazione' + (c.attiva ? '' : ' spenta') },
+      el('h4', {}, el('span', { className: 'stato', textContent: stato }), c.titolo),
+      el('p', { className: 'testo', textContent: c.testo }),
+      el('p', { className: 'dettagli', textContent: `${c.tipo === 'commerciale' ? 'Commerciale' : 'Servizio'} · ` +
+        `${pubblicoDi(c)} · ${date}${tasto} · vista da ${viste} ${viste === 1 ? 'persona' : 'persone'}` }),
+      el('div', { className: 'tasti' },
+        el('button', { className: 'contorno', textContent: 'Modifica', onclick: () => apriModulo(c) }),
+        el('button', { className: 'contorno', textContent: c.attiva ? 'Spegni' : 'Riaccendi',
+          onclick: () => accendi(c, !c.attiva) })));
+  }));
+}
+
+async function accendi(c, attiva) {
+  const { error } = await db.from('comunicazioni').update({ attiva }).eq('id', c.id);
+  if (error) alert(error.message);
+  caricaComunicazioni();
+}
+
+const campi = ['titolo', 'testo', 'tipo', 'piano', 'dalla', 'fino', 'dal', 'al', 'tasto', 'link'];
+function apriModulo(c) {
+  inModifica = c?.id ?? null;
+  $('modulo-titolo').textContent = c ? 'Modifica la comunicazione' : 'Nuova comunicazione';
+  $('nota-modifica').hidden = !c;
+  $('c-titolo').value = c?.titolo ?? '';
+  $('c-testo').value = c?.testo ?? '';
+  $('c-tipo').value = c?.tipo ?? 'servizio';
+  $('c-piano').value = c?.piano ?? '';
+  $('c-dalla').value = c?.dalla_versione ?? '';
+  $('c-fino').value = c?.fino_alla_versione ?? '';
+  $('c-dal').value = perCampo(c?.dal ?? new Date().toISOString());
+  $('c-al').value = perCampo(c?.al);
+  $('c-tasto').value = c?.tasto ?? '';
+  $('c-link').value = c?.link ?? '';
+  $('c-attiva').checked = c?.attiva ?? true;
+  $('esito-modulo').textContent = '';
+  $('modulo').hidden = false;
+  aggiornaAnteprima();
+  $('modulo').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  $('c-titolo').focus({ preventScroll: true });
+}
+$('nuova').onclick = () => apriModulo(null);
+$('annulla').onclick = () => { $('modulo').hidden = true; };
+
+function aggiornaAnteprima() {
+  // Le commerciali vanno solo al piano gratuito (vincolo nel database).
+  const commerciale = $('c-tipo').value === 'commerciale';
+  if (commerciale) $('c-piano').value = 'free';
+  $('c-piano').disabled = commerciale;
+  $('conta-titolo').textContent = `${$('c-titolo').value.length}/80`;
+  $('conta-testo').textContent = `${$('c-testo').value.length}/600`;
+  $('a-titolo').textContent = $('c-titolo').value || 'Titolo';
+  $('a-testo').textContent = $('c-testo').value || 'Il testo della comunicazione.';
+  const tasto = $('c-tasto').value.trim();
+  $('a-tasti').replaceChildren(...(tasto
+    ? [el('span', { className: 'finto pieno', textContent: tasto }), el('span', { className: 'finto vuoto', textContent: 'Chiudi' })]
+    : [el('span', { className: 'finto pieno', textContent: 'Ho capito' })]));
+}
+for (const c of campi) $('c-' + c).addEventListener('input', aggiornaAnteprima);
+
+const VERSIONE = /^[0-9]+\.[0-9]+\.[0-9]+$/;
+$('modulo').onsubmit = async (e) => {
+  e.preventDefault();
+  const v = (id) => $(id).value.trim();
+  const riga = {
+    titolo: v('c-titolo'), testo: v('c-testo'), tipo: v('c-tipo'), piano: v('c-piano') || null,
+    dalla_versione: v('c-dalla') || null, fino_alla_versione: v('c-fino') || null,
+    dal: new Date(v('c-dal') || Date.now()).toISOString(), al: v('c-al') ? new Date(v('c-al')).toISOString() : null,
+    tasto: v('c-tasto') || null, link: v('c-link') || null, attiva: $('c-attiva').checked,
+  };
+  const problema =
+    !riga.titolo || !riga.testo ? 'Servono titolo e testo.'
+    : [riga.dalla_versione, riga.fino_alla_versione].some((x) => x && !VERSIONE.test(x)) ? 'Le versioni si scrivono come 1.9.0.'
+    : !riga.tasto !== !riga.link ? 'Tasto e pagina vanno insieme: tutti e due o nessuno.'
+    : riga.link && !/^(\/|https:\/\/)/.test(riga.link) ? 'Il tasto apre una pagina dell\'app (/…) o un indirizzo https://.'
+    : riga.al && riga.al <= riga.dal ? 'La fine deve venire dopo l\'inizio.'
+    : null;
+  if (problema) {
+    $('esito-modulo').textContent = problema;
+    return;
+  }
+  const { error } = inModifica
+    ? await db.from('comunicazioni').update(riga).eq('id', inModifica)
+    : await db.from('comunicazioni').insert(riga);
+  if (error) {
+    $('esito-modulo').textContent = 'Non salvata: ' + error.message;
+    return;
+  }
+  $('modulo').hidden = true;
+  caricaComunicazioni();
+};
+</script>
+</body>
+</html>
