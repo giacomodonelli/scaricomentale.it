@@ -63,6 +63,11 @@ input:focus { outline: 2px solid var(--accento); outline-offset: -1px; }
     <button class="primario" id="entra">Collega</button>
     <button type="button" class="link" id="altra-email">Usa un'altra email</button>
   </form>
+  <form id="modulo-password" hidden>
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="current-password" required>
+    <button class="primario" id="entra-password">Collega</button>
+  </form>
   <p id="esito" class="errore" role="alert"></p>
 </section>
 
@@ -93,11 +98,20 @@ if (parametri.get('response_type') !== 'code' || !DI_AMAZON.test(ritorno)) {
   errore("Apri questa pagina dall'app Alexa: cerca la skill Scarico mentale e tocca Attiva.");
 }
 
+// L'account della revisione (Apple e Amazon) entra con la password, come nell'app: chi revisiona non riceve il codice.
+const EMAIL_REVISIONE = 'revisione-apple@weekid.it';
+
 let emailInviata = '';
 $('modulo-email').onsubmit = async (e) => {
   e.preventDefault();
   errore('');
   emailInviata = $('email').value.trim().toLowerCase();
+  if (emailInviata === EMAIL_REVISIONE) {
+    $('modulo-email').hidden = true;
+    $('modulo-password').hidden = false;
+    $('password').focus();
+    return;
+  }
   const { error } = await db.auth.signInWithOtp({ email: emailInviata, options: { shouldCreateUser: false } });
   if (error) {
     errore(/signup|not found/i.test(error.message)
@@ -117,28 +131,47 @@ $('modulo-codice').onsubmit = async (e) => {
   try {
     const { error } = await db.auth.verifyOtp({ email: emailInviata, token: $('codice').value.trim(), type: 'email' });
     if (error) return errore('Il codice non va o è scaduto.');
-    const { data: codice, error: erroreCodice } = await db.rpc('crea_codice_alexa', { p_redirect_uri: ritorno });
-    await db.auth.signOut().catch(() => undefined);
-    if (erroreCodice) {
-      const m = erroreCodice.message || '';
-      return errore(m.includes('solo abbonamento')
-        ? "Alexa è inclusa nell'abbonamento di Scarico mentale: puoi abbonarti dall'app, poi riprova da qui."
-        : m.includes('persona non trovata') ? "Completa prima il benvenuto nell'app Scarico mentale."
-        : 'Non riesco a collegare Alexa adesso: riprova tra poco.');
-    }
-    $('accesso').hidden = true;
-    $('fatto').hidden = false;
-    const indirizzo = new URL(ritorno);
-    indirizzo.searchParams.set('state', stato);
-    indirizzo.searchParams.set('code', codice);
-    location.replace(indirizzo.toString());
+    await collega();
   } finally {
     $('entra').disabled = false;
   }
 };
 
+$('modulo-password').onsubmit = async (e) => {
+  e.preventDefault();
+  errore('');
+  $('entra-password').disabled = true;
+  try {
+    const { error } = await db.auth.signInWithPassword({ email: emailInviata, password: $('password').value });
+    if (error) return errore('La password non va.');
+    await collega();
+  } finally {
+    $('entra-password').disabled = false;
+  }
+};
+
+// Dopo l'accesso: il codice monouso per Amazon, poi si chiude la sessione e si torna ad Alexa.
+async function collega() {
+  const { data: codice, error: erroreCodice } = await db.rpc('crea_codice_alexa', { p_redirect_uri: ritorno });
+  await db.auth.signOut().catch(() => undefined);
+  if (erroreCodice) {
+    const m = erroreCodice.message || '';
+    return errore(m.includes('solo abbonamento')
+      ? "Alexa è inclusa nel piano premium di Scarico mentale: il tuo account è nel piano gratuito."
+      : m.includes('persona non trovata') ? "Completa prima il benvenuto nell'app Scarico mentale."
+      : 'Non riesco a collegare Alexa adesso: riprova tra poco.');
+  }
+  $('accesso').hidden = true;
+  $('fatto').hidden = false;
+  const indirizzo = new URL(ritorno);
+  indirizzo.searchParams.set('state', stato);
+  indirizzo.searchParams.set('code', codice);
+  location.replace(indirizzo.toString());
+}
+
 $('altra-email').onclick = () => {
   $('modulo-codice').hidden = true;
+  $('modulo-password').hidden = true;
   $('modulo-email').hidden = false;
   errore('');
 };
