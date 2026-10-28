@@ -69,6 +69,8 @@ td:last-child, th:last-child { text-align: right; }
 .anteprima { background: var(--sfondo); border-radius: 22px; padding: 10px 20px 22px; align-self: start;
   position: sticky; top: 16px; }
 .anteprima .grabber { width: 36px; height: 5px; border-radius: 3px; background: var(--linea); margin: 0 auto 18px; }
+.anteprima img { display: block; width: 100%; object-fit: contain; border-radius: 14px; background: var(--linea);
+  margin-bottom: 12px; }
 .anteprima .titolo { font-size: 22px; font-weight: 700; margin: 0 0 8px; overflow-wrap: anywhere; }
 .anteprima .testo { color: var(--secondario); white-space: pre-wrap; overflow-wrap: anywhere; }
 .anteprima .finto { display: block; text-align: center; border-radius: 999px; padding: 12px; font-weight: 600;
@@ -79,6 +81,7 @@ td:last-child, th:last-child { text-align: right; }
 .comunicazione h4 { margin: 0 0 4px; font-size: 17px; overflow-wrap: anywhere; }
 .comunicazione .testo { color: var(--secondario); white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 8px; }
 .comunicazione .dettagli { font-size: 14px; color: var(--secondario); margin: 0; }
+.comunicazione .miniatura { display: block; max-width: 160px; max-height: 120px; border-radius: 10px; margin: 4px 0 8px; }
 .stato { display: inline-block; font-size: 13px; font-weight: 600; border-radius: 999px; padding: 2px 10px;
   border: 1px solid currentColor; margin-right: 6px; }
 .spenta { opacity: 0.6; }
@@ -188,6 +191,10 @@ td:last-child, th:last-child { text-align: right; }
             <datalist id="pagine"></datalist>
           </div>
         </div>
+        <label for="c-immagine">Immagine <span class="secondario">(facoltativa: JPEG, PNG o WebP; la riduco io prima di
+          caricarla)</span></label>
+        <input id="c-immagine" type="file" accept="image/jpeg,image/png,image/webp">
+        <button type="button" class="link" id="togli-immagine" hidden>Togli l'immagine</button>
         <label><input id="c-attiva" type="checkbox" style="width: auto; margin-right: 6px;">Attiva</label>
         <p class="secondario" id="nota-modifica" hidden>Chi l'ha già vista non la rivede anche se la cambi.</p>
         <p class="errore" id="esito-modulo"></p>
@@ -198,6 +205,7 @@ td:last-child, th:last-child { text-align: right; }
       </div>
       <div class="anteprima" aria-label="Anteprima nell'app">
         <div class="grabber"></div>
+        <img id="a-immagine" alt="" hidden>
         <p class="titolo" id="a-titolo"></p>
         <p class="testo" id="a-testo"></p>
         <div id="a-tasti"></div>
@@ -425,6 +433,7 @@ async function caricaComunicazioni() {
     const tasto = c.tasto ? ` · tasto «${c.tasto}» → ${c.link}` : '';
     return el('article', { className: 'scheda comunicazione' + (c.attiva ? '' : ' spenta') },
       el('h4', {}, el('span', { className: 'stato', textContent: stato }), c.titolo),
+      ...(c.immagine ? [el('img', { className: 'miniatura', src: c.immagine, alt: '' })] : []),
       el('p', { className: 'testo', textContent: c.testo }),
       el('p', { className: 'dettagli', textContent: `${c.tipo === 'commerciale' ? 'Commerciale' : 'Servizio'} · ` +
         `${pubblicoDi(c)} · ${date}${tasto} · vista da ${viste} ${viste === 1 ? 'persona' : 'persone'}` }),
@@ -457,6 +466,9 @@ function apriModulo(c) {
   $('c-tasto').value = c?.tasto ?? '';
   $('c-link').value = c?.link ?? '';
   $('c-attiva').checked = c?.attiva ?? true;
+  immagineSalvata = c?.immagine ?? null;
+  immagine = c?.immagine ? { url: c.immagine, rapporto: c.immagine_rapporto, blob: null } : null;
+  $('c-immagine').value = '';
   $('esito-modulo').textContent = '';
   $('modulo').hidden = false;
   aggiornaAnteprima();
@@ -473,6 +485,15 @@ function aggiornaAnteprima() {
   $('c-piano').disabled = commerciale;
   $('conta-titolo').textContent = `${$('c-titolo').value.length}/80`;
   $('conta-testo').textContent = `${$('c-testo').value.length}/600`;
+  // Come nell'app: in cima, al massimo quadrata.
+  $('a-immagine').hidden = !immagine;
+  $('togli-immagine').hidden = !immagine;
+  if (immagine) {
+    $('a-immagine').src = immagine.url;
+    $('a-immagine').style.aspectRatio = String(Math.max(immagine.rapporto || 1, 1));
+  } else {
+    $('a-immagine').removeAttribute('src');
+  }
   $('a-titolo').textContent = $('c-titolo').value || 'Titolo';
   $('a-testo').textContent = $('c-testo').value || 'Il testo della comunicazione.';
   const tasto = $('c-tasto').value.trim();
@@ -481,6 +502,58 @@ function aggiornaAnteprima() {
     : [el('span', { className: 'finto pieno', textContent: 'Ho capito' })]));
 }
 for (const c of campi) $('c-' + c).addEventListener('input', aggiornaAnteprima);
+
+// Immagine: quella già salvata (solo l'indirizzo) o una scelta adesso, ridotta qui e caricata al salvataggio. Le
+// comunicazioni durano poco: quando un'immagine si cambia o si toglie, il file vecchio si cancella.
+const CONTENITORE = 'comunicazioni';
+const LATO_MASSIMO = 1600;
+let immagine = null; // { url, rapporto, blob } — blob solo per una nuova, ancora da caricare
+let immagineSalvata = null; // indirizzo dell'immagine della comunicazione aperta, prima delle modifiche
+
+// JPEG di al massimo 1600 px sul lato lungo, su fondo bianco (le trasparenze del PNG diventano bianche).
+async function riduci(file) {
+  const foto = await createImageBitmap(file);
+  const scala = Math.min(1, LATO_MASSIMO / Math.max(foto.width, foto.height));
+  const tela = document.createElement('canvas');
+  tela.width = Math.round(foto.width * scala);
+  tela.height = Math.round(foto.height * scala);
+  const ctx = tela.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, tela.width, tela.height);
+  ctx.drawImage(foto, 0, 0, tela.width, tela.height);
+  const blob = await new Promise((fatto) => tela.toBlob(fatto, 'image/jpeg', 0.85));
+  return { url: URL.createObjectURL(blob), rapporto: tela.width / tela.height, blob };
+}
+
+// Il nome del file nel contenitore, se l'indirizzo è nostro.
+function fileDi(url) {
+  const segno = `/storage/v1/object/public/${CONTENITORE}/`;
+  return url && url.includes(segno) ? decodeURIComponent(url.split(segno)[1]) : null;
+}
+
+$('c-immagine').addEventListener('change', async () => {
+  const file = $('c-immagine').files[0];
+  if (!file) return;
+  $('esito-modulo').textContent = '';
+  try {
+    const nuova = await riduci(file);
+    if (nuova.rapporto < 0.2 || nuova.rapporto > 5) {
+      $('esito-modulo').textContent = 'Immagine troppo stretta o troppo larga.';
+      $('c-immagine').value = '';
+      return;
+    }
+    immagine = nuova;
+  } catch {
+    $('esito-modulo').textContent = 'Non riesco a leggere questa immagine.';
+    $('c-immagine').value = '';
+  }
+  aggiornaAnteprima();
+});
+$('togli-immagine').onclick = () => {
+  immagine = null;
+  $('c-immagine').value = '';
+  aggiornaAnteprima();
+};
 
 const VERSIONE = /^[0-9]+\.[0-9]+\.[0-9]+$/;
 $('modulo').onsubmit = async (e) => {
@@ -503,13 +576,31 @@ $('modulo').onsubmit = async (e) => {
     $('esito-modulo').textContent = problema;
     return;
   }
+  // Prima si carica l'immagine nuova; se poi la comunicazione non si salva, il file si toglie.
+  let caricata = null;
+  if (immagine?.blob) {
+    const nome = crypto.randomUUID() + '.jpg';
+    const { error: errore } = await db.storage.from(CONTENITORE).upload(nome, immagine.blob, { contentType: 'image/jpeg' });
+    if (errore) {
+      $('esito-modulo').textContent = 'Immagine non caricata: ' + errore.message;
+      return;
+    }
+    caricata = nome;
+    riga.immagine = db.storage.from(CONTENITORE).getPublicUrl(nome).data.publicUrl;
+  } else {
+    riga.immagine = immagine?.url ?? null;
+  }
+  riga.immagine_rapporto = riga.immagine ? Math.round(immagine.rapporto * 1000) / 1000 : null;
   const { error } = inModifica
     ? await db.from('comunicazioni').update(riga).eq('id', inModifica)
     : await db.from('comunicazioni').insert(riga);
   if (error) {
+    if (caricata) await db.storage.from(CONTENITORE).remove([caricata]);
     $('esito-modulo').textContent = 'Non salvata: ' + error.message;
     return;
   }
+  const vecchia = fileDi(immagineSalvata);
+  if (vecchia && immagineSalvata !== riga.immagine) await db.storage.from(CONTENITORE).remove([vecchia]);
   $('modulo').hidden = true;
   caricaComunicazioni();
 };
