@@ -150,10 +150,11 @@ $('modulo-password').onsubmit = async (e) => {
   }
 };
 
-// Dopo l'accesso: il codice monouso per Amazon, poi si chiude la sessione e si torna ad Alexa.
+// Dopo l'accesso: il codice monouso per Amazon, poi si chiude la sessione e si torna ad Alexa. Solo la sessione di
+// questa pagina (scope local): quella predefinita (global) chiude anche l'app sul telefono.
 async function collega() {
   const { data: codice, error: erroreCodice } = await db.rpc('crea_codice_alexa', { p_redirect_uri: ritorno });
-  await db.auth.signOut().catch(() => undefined);
+  await db.auth.signOut({ scope: 'local' }).catch(() => undefined);
   if (erroreCodice) {
     const m = erroreCodice.message || '';
     return errore(m.includes('solo abbonamento')
