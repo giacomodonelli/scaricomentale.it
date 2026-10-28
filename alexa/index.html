@@ -1,0 +1,147 @@
+<!doctype html>
+<!-- Collegamento di Alexa (spec docs/superpowers/specs/2026-10-28-alexa-design.md): l'app Alexa apre questa pagina con
+     client_id, redirect_uri, state e response_type=code. Si entra con email e codice, come nell'app; poi
+     crea_codice_alexa (solo premium e mese di prova, solo indirizzi di ritorno di Amazon) e si torna ad Amazon con il
+     codice monouso. La sessione resta in memoria e si chiude subito. sito/genera.ts la copia in alexa/index.html. -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Collega Alexa · Scarico mentale</title>
+<link rel="icon" href="/icona.png">
+<style>
+:root { --sfondo: #EEEBFB; --scheda: #FFFFFF; --testo: #1E1B3A; --secondario: #5D5A78; --accento: #5A4BD1;
+  --linea: rgba(30, 27, 58, 0.12); --errore: #B3261E; }
+@media (prefers-color-scheme: dark) {
+  :root { --sfondo: #16142B; --scheda: #221F3D; --testo: #F1EFFB; --secondario: #B5B1D3; --accento: #A99CFF;
+    --linea: rgba(241, 239, 251, 0.14); --errore: #FF8A80; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--sfondo); color: var(--testo); font: 17px/1.5 -apple-system, BlinkMacSystemFont,
+  "Segoe UI", Roboto, sans-serif; }
+main { max-width: 440px; margin: 0 auto; padding: 32px 16px 48px; }
+header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+header img { width: 44px; height: 44px; border-radius: 11px; }
+header strong { font-size: 19px; }
+h1 { font-size: 26px; line-height: 1.2; margin: 0 0 10px; }
+p { margin: 0 0 14px; }
+.secondario { color: var(--secondario); }
+.errore { color: var(--errore); }
+.scheda { background: var(--scheda); border-radius: 20px; padding: 20px; }
+label { display: block; font-size: 15px; font-weight: 600; margin: 4px 0 6px; }
+input { width: 100%; font: inherit; color: var(--testo); background: var(--sfondo); border: 1px solid var(--linea);
+  border-radius: 12px; padding: 11px 13px; }
+input:focus { outline: 2px solid var(--accento); outline-offset: -1px; }
+.primario { width: 100%; background: var(--accento); color: var(--scheda); border: 0; border-radius: 999px;
+  padding: 14px 20px; font: inherit; font-weight: 600; cursor: pointer; margin-top: 16px; }
+.primario:disabled { opacity: 0.6; }
+.link { color: var(--accento); background: none; border: 0; padding: 0; font: inherit; cursor: pointer;
+  margin-top: 14px; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+</head>
+<body>
+<main>
+<header><img src="/icona.png" alt=""><strong>Scarico mentale</strong></header>
+
+<h1>Collega Alexa</h1>
+<p class="secondario">Alexa potrà segnare le cose che le dici e leggerti gli impegni del giorno. Entra con l'email del
+  tuo account: ti mandiamo un codice.</p>
+
+<section class="scheda" id="accesso">
+  <form id="modulo-email">
+    <label for="email">Email dell'account</label>
+    <input id="email" type="email" autocomplete="email" required>
+    <button class="primario">Mandami il codice</button>
+  </form>
+  <form id="modulo-codice" hidden>
+    <p class="secondario">Ti abbiamo mandato un codice a <strong id="email-inviata"></strong>.</p>
+    <label for="codice">Codice</label>
+    <input id="codice" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+    <button class="primario" id="entra">Collega</button>
+    <button type="button" class="link" id="altra-email">Usa un'altra email</button>
+  </form>
+  <p id="esito" class="errore" role="alert"></p>
+</section>
+
+<section class="scheda" id="fatto" hidden>
+  <p><strong>Fatto.</strong> Torno ad Alexa…</p>
+</section>
+</main>
+
+<script>
+// La chiave pubblica del progetto, la stessa dell'app: da sola non apre niente, il codice lo crea il database solo per
+// chi è entrato.
+const db = supabase.createClient('https://yadygffzwxpnvlktzqna.supabase.co',
+  'sb_publishable_XLN4tU9fFnSJxzCbdELoVQ_RnjSY0li', { auth: { persistSession: false, autoRefreshToken: false } });
+
+const $ = (id) => document.getElementById(id);
+const parametri = new URLSearchParams(location.search);
+const ritorno = parametri.get('redirect_uri') || '';
+const stato = parametri.get('state') || '';
+// Gli stessi indirizzi che accetta il database (redirect_alexa_valido).
+const DI_AMAZON = /^https:\/\/(pitangui\.amazon\.com|layla\.amazon\.com|alexa\.amazon\.co\.jp)\/api\/skill\/link\/[A-Za-z0-9]+$/;
+
+function errore(testo) {
+  $('esito').textContent = testo;
+}
+
+if (parametri.get('response_type') !== 'code' || !DI_AMAZON.test(ritorno)) {
+  $('modulo-email').hidden = true;
+  errore("Apri questa pagina dall'app Alexa: cerca la skill Scarico mentale e tocca Attiva.");
+}
+
+let emailInviata = '';
+$('modulo-email').onsubmit = async (e) => {
+  e.preventDefault();
+  errore('');
+  emailInviata = $('email').value.trim().toLowerCase();
+  const { error } = await db.auth.signInWithOtp({ email: emailInviata, options: { shouldCreateUser: false } });
+  if (error) {
+    errore(/signup|not found/i.test(error.message)
+      ? "Questa email non ha un account: crealo prima nell'app Scarico mentale." : 'Il codice non è partito: riprova.');
+    return;
+  }
+  $('email-inviata').textContent = emailInviata;
+  $('modulo-email').hidden = true;
+  $('modulo-codice').hidden = false;
+  $('codice').focus();
+};
+
+$('modulo-codice').onsubmit = async (e) => {
+  e.preventDefault();
+  errore('');
+  $('entra').disabled = true;
+  try {
+    const { error } = await db.auth.verifyOtp({ email: emailInviata, token: $('codice').value.trim(), type: 'email' });
+    if (error) return errore('Il codice non va o è scaduto.');
+    const { data: codice, error: erroreCodice } = await db.rpc('crea_codice_alexa', { p_redirect_uri: ritorno });
+    await db.auth.signOut().catch(() => undefined);
+    if (erroreCodice) {
+      const m = erroreCodice.message || '';
+      return errore(m.includes('solo abbonamento')
+        ? "Alexa è inclusa nell'abbonamento di Scarico mentale: puoi abbonarti dall'app, poi riprova da qui."
+        : m.includes('persona non trovata') ? "Completa prima il benvenuto nell'app Scarico mentale."
+        : 'Non riesco a collegare Alexa adesso: riprova tra poco.');
+    }
+    $('accesso').hidden = true;
+    $('fatto').hidden = false;
+    const indirizzo = new URL(ritorno);
+    indirizzo.searchParams.set('state', stato);
+    indirizzo.searchParams.set('code', codice);
+    location.replace(indirizzo.toString());
+  } finally {
+    $('entra').disabled = false;
+  }
+};
+
+$('altra-email').onclick = () => {
+  $('modulo-codice').hidden = true;
+  $('modulo-email').hidden = false;
+  errore('');
+};
+</script>
+</body>
+</html>
