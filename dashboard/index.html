@@ -239,7 +239,7 @@ td:last-child, th:last-child { text-align: right; }
       </div>
       <div>
         <label for="s-quanti">Persone al massimo</label>
-        <input id="s-quanti" type="number" min="1" max="25000" step="1" value="25000">
+        <input id="s-quanti" type="number" min="2" max="25000" step="1" value="25000">
       </div>
     </div>
     <p class="secondario" id="s-nota"></p>
@@ -753,8 +753,8 @@ $('modulo-sconto').onsubmit = async (e) => {
     : !/^[A-Z0-9]{1,64}$/.test(richiesta.codice) ? 'Il codice: solo lettere e numeri, senza spazi.'
     : !richiesta.ultimo_giorno || richiesta.ultimo_giorno < $('s-ultimo').min || richiesta.ultimo_giorno > $('s-ultimo').max
       ? 'Scegli l\'ultimo giorno, da oggi a 6 mesi.'
-    : !Number.isInteger(richiesta.quanti) || richiesta.quanti < 1 || richiesta.quanti > 25000
-      ? 'Persone al massimo: da 1 a 25.000.'
+    : !Number.isInteger(richiesta.quanti) || richiesta.quanti < 2 || richiesta.quanti > 25000
+      ? 'Persone al massimo: da 2 a 25.000.'
     : null;
   if (problema) {
     $('esito-sconto').textContent = problema;
