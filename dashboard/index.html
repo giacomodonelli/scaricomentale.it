@@ -96,6 +96,7 @@ td:last-child, th:last-child { text-align: right; }
   <nav id="menu" hidden>
     <a href="#numeri">Numeri</a>
     <a href="#comunicazioni">Comunicazioni</a>
+    <a href="#sconti">Sconti</a>
     <button class="link" id="esci">Esci</button>
   </nav>
 </header>
@@ -124,8 +125,8 @@ td:last-child, th:last-child { text-align: right; }
 
 <div id="pannello" hidden>
   <h2 id="numeri">Numeri</h2>
-  <p class="secondario">Senza la famiglia finta della revisione di Apple. Giorni di Roma. <button class="link"
-    id="aggiorna">Aggiorna</button></p>
+  <p class="secondario">Senza la famiglia finta della revisione di Apple. Giorni di Roma. <span id="nota-cambio"></span>
+    <button class="link" id="aggiorna">Aggiorna</button></p>
   <div class="tessere" id="tessere"></div>
   <div class="griglia">
     <figure class="scheda" id="grafico-messaggi"></figure>
@@ -213,6 +214,39 @@ td:last-child, th:last-child { text-align: right; }
     </div>
   </form>
   <div class="elenco" id="elenco"></div>
+
+  <h2 id="sconti">Sconti</h2>
+  <p class="secondario">Codici offerta di Apple con il primo anno scontato, per chi non è abbonato (le famiglie nel mese di
+    prova contano come nuove). Si usano da "Hai un codice?" in Abbonamento (dalla 1.11.0) o dal link, solo con l'app
+    sull'App Store; diventano validi entro un'ora. Un codice creato non si modifica: si spegne e se ne crea un altro.</p>
+  <form id="modulo-sconto" class="scheda" novalidate>
+    <h3>Nuovo codice</h3>
+    <div class="coppia">
+      <div>
+        <label for="s-prezzo">Prezzo del primo anno</label>
+        <select id="s-prezzo"></select>
+      </div>
+      <div>
+        <label for="s-codice">Codice <span class="secondario">(lettere e numeri)</span></label>
+        <input id="s-codice" maxlength="64" placeholder="per esempio WEEKEND" autocapitalize="characters"
+          spellcheck="false" autocomplete="off">
+      </div>
+    </div>
+    <div class="coppia">
+      <div>
+        <label for="s-ultimo">Ultimo giorno <span class="secondario">(compreso)</span></label>
+        <input id="s-ultimo" type="date">
+      </div>
+      <div>
+        <label for="s-quanti">Persone al massimo</label>
+        <input id="s-quanti" type="number" min="1" max="25000" step="1" value="25000">
+      </div>
+    </div>
+    <p class="secondario" id="s-nota"></p>
+    <p class="errore" id="esito-sconto"></p>
+    <div class="tasti"><button class="primario" id="crea-sconto">Crea il codice</button></div>
+  </form>
+  <div class="elenco" id="codici"></div>
 </div>
 </main>
 <div class="suggerimento" id="suggerimento" hidden></div>
@@ -236,8 +270,16 @@ function svg(tag, attributi) {
 }
 
 const intero = new Intl.NumberFormat('it-IT');
-const dollari = (v) => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'USD', minimumFractionDigits: 2,
+const euro = (v) => new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2,
   maximumFractionDigits: v > 0 && v < 1 ? 4 : 2 }).format(v);
+// I costi sono salvati in dollari: si mostrano in euro con il cambio della BCE del giorno (frankfurter.dev, nessun dato
+// nostro nella richiesta). Se il servizio non risponde, 0,90.
+let cambio = { valore: 0.9, data: null };
+const cambioPronto = fetch('https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR')
+  .then((r) => r.json())
+  .then((d) => { if (d?.rates?.EUR > 0) cambio = { valore: d.rates.EUR, data: d.date }; })
+  .catch(() => {});
+const costo = (dollari) => euro(dollari * cambio.valore);
 const giorno = (d) => new Date(d + 'T12:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
 const dataOra = (iso) => new Date(iso).toLocaleString('it-IT', { day: 'numeric', month: 'short', year: 'numeric',
   hour: '2-digit', minute: '2-digit' });
@@ -315,8 +357,9 @@ async function mostra() {
   $('pannello').hidden = false;
   caricaNumeri();
   caricaComunicazioni();
+  caricaSconti();
 }
-$('aggiorna').onclick = () => { caricaNumeri(); caricaComunicazioni(); };
+$('aggiorna').onclick = () => { caricaNumeri(); caricaComunicazioni(); caricaSconti(); };
 
 // Numeri
 function tessera(titolo, valore, nota) {
@@ -325,7 +368,10 @@ function tessera(titolo, valore, nota) {
 }
 
 async function caricaNumeri() {
-  const { data: n, error } = await db.rpc('dashboard_numeri');
+  const [{ data: n, error }] = await Promise.all([db.rpc('dashboard_numeri'), cambioPronto]);
+  $('nota-cambio').textContent = cambio.data
+    ? `Costi in euro al cambio BCE del ${giorno(cambio.data)} (1 $ = ${cambio.valore.toLocaleString('it-IT')} €).`
+    : 'Costi in euro al cambio indicativo di 0,90 € per dollaro (BCE non raggiungibile).';
   if (error) {
     $('tessere').replaceChildren(el('p', { className: 'errore', textContent: 'Numeri non disponibili: ' + error.message }));
     return;
@@ -337,16 +383,16 @@ async function caricaNumeri() {
     tessera('Famiglie attive, 7 giorni', intero.format(f.attive_7), `con almeno un messaggio · ${f.attive_30} in 30 giorni`),
     tessera('Messaggi oggi', intero.format(m.oggi), `${intero.format(m.giorni_7)} in 7 giorni · ` +
       `${intero.format(m.giorni_30)} in 30` + (m.errori_7 ? ` · ${m.errori_7} in errore in 7 giorni` : '')),
-    tessera('Costo LLM, 30 giorni', dollari(c.costo_usd_30),
-      `${dollari(c.costo_usd_7)} in 7 giorni · ${dollari(c.costo_medio_usd)} a messaggio`),
+    tessera('Costo LLM, 30 giorni', costo(c.costo_usd_30),
+      `${costo(c.costo_usd_7)} in 7 giorni · ${costo(c.costo_medio_usd)} a messaggio`),
     tessera('Abbonamenti attivi', intero.format(a.attivi), `${a.in_prova} in prova · ${a.rinnovo_spento} con il rinnovo spento`),
     tessera('Adulti con l\'app', intero.format(p.adulti_app),
       `${p.adulti_senza_app} senza app · ${p.figli} figli · ${p.whatsapp} con WhatsApp`),
   );
   grafico($('grafico-messaggi'), 'Messaggi al giorno, 30 giorni', n.giorni, 'messaggi', (v) => intero.format(v));
-  grafico($('grafico-costo'), 'Costo LLM al giorno (USD), 30 giorni', n.giorni, 'costo_usd', dollari);
+  grafico($('grafico-costo'), 'Costo LLM al giorno, 30 giorni', n.giorni, 'costo_usd', costo);
   tabella($('canali'), Object.entries(m.canali_30).map(([k, v]) => [CANALI[k] ?? k, intero.format(v)]), ['Canale', 'Messaggi']);
-  tabella($('tipi'), Object.entries(c.tipi_30).map(([k, v]) => [TIPI[k] ?? k, `${intero.format(v.n)} · ${dollari(v.costo_usd)}`]),
+  tabella($('tipi'), Object.entries(c.tipi_30).map(([k, v]) => [TIPI[k] ?? k, `${intero.format(v.n)} · ${costo(v.costo_usd)}`]),
     ['Tipo', 'Volte · costo']);
 }
 
@@ -604,6 +650,152 @@ $('modulo').onsubmit = async (e) => {
   $('modulo').hidden = true;
   caricaComunicazioni();
 };
+
+// Sconti (spec docs/superpowers/specs/2026-10-30-sconti-flash-design.md): codici offerta di Apple dalla funzione
+// sconti, che parla con App Store Connect. Lo stato è quello di Apple, quindi il caricamento richiede qualche secondo.
+let pieno = null; // { prezzo, netto } del prezzo pieno in Italia
+let prezziSconto = []; // [{ prezzo, netto }] nel menu
+const giornoLungo = (d) => new Date(d + 'T12:00:00').toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric',
+  month: 'long' });
+const oraLocale = (iso) => new Date(iso).toLocaleString('it-IT', { weekday: 'long', day: 'numeric', month: 'long',
+  hour: '2-digit', minute: '2-digit' });
+// Giorno YYYY-MM-DD spostato di n giorni.
+function sposta(d, n) {
+  const x = new Date(d + 'T00:00:00Z');
+  x.setUTCDate(x.getUTCDate() + n);
+  return x.toISOString().slice(0, 10);
+}
+// Apple fa scadere i codici alla mezzanotte della California del giorno di scadenza (come nella funzione).
+function mezzanotteCalifornia(d) {
+  const prova = new Date(d + 'T08:00:00Z');
+  const ora = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'America/Los_Angeles', hour: 'numeric',
+    hourCycle: 'h23' }).format(prova));
+  return new Date(prova.getTime() - ora * 3600000);
+}
+
+async function sconti(corpo) {
+  const { data, error } = await db.functions.invoke('sconti', { body: corpo });
+  if (!error) return data;
+  const dettaglio = await error.context?.json?.().catch(() => null);
+  throw new Error(dettaglio?.errore ?? error.message);
+}
+
+const STATI_CODICE = { attivo: 'Attivo', scaduto: 'Scaduto', spento: 'Spento' };
+
+async function caricaSconti() {
+  $('codici').replaceChildren(el('p', { className: 'secondario', textContent: 'Carico i codici da App Store Connect…' }));
+  let s;
+  try {
+    s = await sconti({ azione: 'stato' });
+  } catch (e) {
+    $('codici').replaceChildren(el('p', { className: 'errore', textContent: 'Sconti non disponibili: ' + e.message }));
+    return;
+  }
+  pieno = s.pieno;
+  // I prezzi in .99, dal più alto; di partenza 19,99 (il prezzo della community).
+  const scelto = Number($('s-prezzo').value) || 19.99;
+  prezziSconto = s.prezzi.filter((p) => Math.round(p.prezzo * 100) % 100 === 99);
+  $('s-prezzo').replaceChildren(...prezziSconto.map((p) => el('option', { value: String(p.prezzo),
+    textContent: `${euro(p.prezzo)} · ti restano ${euro(p.netto)}`, selected: p.prezzo === scelto })));
+  aggiornaNotaSconto();
+  if (!s.codici.length) {
+    $('codici').replaceChildren(el('p', { className: 'secondario', textContent: 'Nessun codice per ora.' }));
+    return;
+  }
+  $('codici').replaceChildren(...s.codici.map((c) => {
+    const fino = c.ultimo_giorno ? `fino a ${giornoLungo(c.ultimo_giorno)} compreso` : 'senza scadenza';
+    return el('article', { className: 'scheda comunicazione' + (c.stato === 'attivo' ? '' : ' spenta') },
+      el('h4', {}, el('span', { className: 'stato', textContent: STATI_CODICE[c.stato] }), c.codice),
+      el('p', { className: 'dettagli', textContent: `${c.prezzo != null ? euro(c.prezzo) : '?'} il primo anno · ${fino} · ` +
+        `al massimo ${intero.format(c.quanti)} persone` + (c.creato ? ` · creato il ${dataOra(c.creato)}` : '') }),
+      el('p', { className: 'dettagli', textContent: c.link }),
+      ...(c.stato === 'attivo' ? [el('div', { className: 'tasti' },
+        el('button', { className: 'contorno', textContent: 'Copia il link',
+          onclick: (e) => navigator.clipboard.writeText(c.link).then(() => { e.target.textContent = 'Copiato'; }) }),
+        el('button', { className: 'contorno', textContent: 'Prepara una comunicazione', onclick: () => comunicaSconto(c) }),
+        el('button', { className: 'contorno', textContent: 'Spegni', onclick: () => spegniSconto(c) }))] : []));
+  }));
+}
+
+// Quando scade e quanto resta, sotto il modulo.
+function aggiornaNotaSconto() {
+  const ultimo = $('s-ultimo').value;
+  const scelto = prezziSconto.find((p) => String(p.prezzo) === $('s-prezzo').value);
+  const parti = [];
+  if (ultimo) parti.push(`Vale fino a ${oraLocale(mezzanotteCalifornia(sposta(ultimo, 1)))} (mezzanotte in California).`);
+  if (scelto && pieno) {
+    parti.push(`Primo anno a ${euro(scelto.prezzo)} invece di ${euro(pieno.prezzo)}: a famiglia ti restano ` +
+      `${euro(scelto.netto)} invece di ${euro(pieno.netto)} (dopo IVA e commissione di Apple); poi si rinnova a prezzo pieno.`);
+  }
+  $('s-nota').textContent = parti.join(' ');
+}
+for (const id of ['s-prezzo', 's-ultimo']) $(id).addEventListener('input', aggiornaNotaSconto);
+$('s-codice').addEventListener('input', () => {
+  const pos = $('s-codice').selectionStart;
+  $('s-codice').value = $('s-codice').value.toUpperCase();
+  $('s-codice').setSelectionRange(pos, pos);
+});
+
+// Giorni ammessi: da oggi a 6 mesi (Apple: la scadenza, il giorno dopo l'ultimo, entro 180 giorni).
+const oggiLocale = new Date().toLocaleDateString('en-CA');
+$('s-ultimo').min = oggiLocale;
+$('s-ultimo').max = sposta(oggiLocale, 179);
+
+$('modulo-sconto').onsubmit = async (e) => {
+  e.preventDefault();
+  $('esito-sconto').textContent = '';
+  const richiesta = {
+    azione: 'crea', prezzo: Number($('s-prezzo').value), codice: $('s-codice').value.trim().toUpperCase(),
+    ultimo_giorno: $('s-ultimo').value, quanti: Number($('s-quanti').value),
+  };
+  const problema =
+    !richiesta.prezzo ? 'Aspetta che arrivino i prezzi di Apple.'
+    : !/^[A-Z0-9]{1,64}$/.test(richiesta.codice) ? 'Il codice: solo lettere e numeri, senza spazi.'
+    : !richiesta.ultimo_giorno || richiesta.ultimo_giorno < $('s-ultimo').min || richiesta.ultimo_giorno > $('s-ultimo').max
+      ? 'Scegli l\'ultimo giorno, da oggi a 6 mesi.'
+    : !Number.isInteger(richiesta.quanti) || richiesta.quanti < 1 || richiesta.quanti > 25000
+      ? 'Persone al massimo: da 1 a 25.000.'
+    : null;
+  if (problema) {
+    $('esito-sconto').textContent = problema;
+    return;
+  }
+  if (!confirm(`Creo ${richiesta.codice}: primo anno a ${euro(richiesta.prezzo)} fino a ${giornoLungo(richiesta.ultimo_giorno)} ` +
+    `compreso, per al massimo ${intero.format(richiesta.quanti)} persone? Dopo non si può modificare.`)) return;
+  $('crea-sconto').disabled = true;
+  try {
+    await sconti(richiesta);
+    $('s-codice').value = '';
+    await caricaSconti();
+  } catch (errore) {
+    $('esito-sconto').textContent = 'Codice non creato: ' + errore.message;
+  } finally {
+    $('crea-sconto').disabled = false;
+  }
+};
+
+async function spegniSconto(c) {
+  if (!confirm(`Spengo ${c.codice}? Smette subito di funzionare; chi l'ha già usato non perde niente.`)) return;
+  try {
+    await sconti({ azione: 'spegni', id: c.id });
+  } catch (errore) {
+    alert('Non spento: ' + errore.message);
+  }
+  caricaSconti();
+}
+
+// Il modulo delle comunicazioni già compilato per il codice: si rilegge e si salva come le altre.
+function comunicaSconto(c) {
+  apriModulo(null);
+  $('c-tipo').value = 'commerciale';
+  $('c-titolo').value = `Premium a ${euro(c.prezzo)} il primo anno`;
+  $('c-testo').value = (c.ultimo_giorno ? `Fino a ${giornoLungo(c.ultimo_giorno)} compreso, con` : 'Con') +
+    ` il codice ${c.codice} il primo anno costa ${euro(c.prezzo)} invece di ${euro(pieno.prezzo)}, per tutta la famiglia.`;
+  $('c-tasto').value = 'Usa il codice';
+  $('c-link').value = c.link;
+  $('c-al').value = perCampo(c.fine);
+  aggiornaAnteprima();
+}
 </script>
 </body>
 </html>
