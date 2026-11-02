@@ -280,6 +280,9 @@ const cambioPronto = fetch('https://api.frankfurter.dev/v1/latest?base=USD&symbo
   .then((d) => { if (d?.rates?.EUR > 0) cambio = { valore: d.rates.EUR, data: d.date }; })
   .catch(() => {});
 const costo = (dollari) => euro(dollari * cambio.valore);
+// Quello che resta di un pagamento: senza IVA al 22% e senza la commissione di Apple del 15%. È una stima, le cifre vere
+// sono nei report finanziari di App Store Connect.
+const netto = (lordo) => lordo / 1.22 * 0.85;
 const giorno = (d) => new Date(d + 'T12:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
 const dataOra = (iso) => new Date(iso).toLocaleString('it-IT', { day: 'numeric', month: 'short', year: 'numeric',
   hour: '2-digit', minute: '2-digit' });
@@ -376,7 +379,7 @@ async function caricaNumeri() {
     $('tessere').replaceChildren(el('p', { className: 'errore', textContent: 'Numeri non disponibili: ' + error.message }));
     return;
   }
-  const { famiglie: f, abbonamenti: a, persone: p, messaggi: m, consumi: c } = n;
+  const { famiglie: f, abbonamenti: a, incassi: i, persone: p, messaggi: m, consumi: c } = n;
   $('tessere').replaceChildren(
     tessera('Famiglie', intero.format(f.totale),
       `${f.premium} premium (${f.omaggio} in omaggio) · ${f.nuove_7} nuove in 7 giorni, ${f.nuove_30} in 30`),
@@ -386,6 +389,9 @@ async function caricaNumeri() {
     tessera('Costo LLM, 30 giorni', costo(c.costo_usd_30),
       `${costo(c.costo_usd_7)} in 7 giorni · ${costo(c.costo_medio_usd)} a messaggio`),
     tessera('Abbonamenti attivi', intero.format(a.attivi), `${a.in_prova} in prova · ${a.rinnovo_spento} con il rinnovo spento`),
+    tessera('Incassi del mese', euro(i.mese), `${intero.format(i.mese_n)} ${i.mese_n === 1 ? 'pagamento' : 'pagamenti'}, ` +
+      `IVA compresa · netto stimato ${euro(netto(i.mese))} · mese scorso ${euro(i.mese_scorso)} · ` +
+      `da sempre ${euro(i.totale)}` + (i.rimborsi ? ` · rimborsi: ${i.rimborsi}` : '')),
     tessera('Adulti con l\'app', intero.format(p.adulti_app),
       `${p.adulti_senza_app} senza app · ${p.figli} figli · ${p.whatsapp} con WhatsApp`),
   );
