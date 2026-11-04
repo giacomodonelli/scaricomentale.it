@@ -163,6 +163,13 @@ td:last-child, th:last-child { text-align: right; }
         </div>
         <div class="coppia">
           <div>
+            <label for="c-piattaforma">Telefono</label>
+            <select id="c-piattaforma"><option value="">Tutti</option><option value="ios">iPhone</option>
+              <option value="android">Android</option></select>
+          </div>
+        </div>
+        <div class="coppia">
+          <div>
             <label for="c-dalla">Dalla versione <span class="secondario">(compresa)</span></label>
             <input id="c-dalla" placeholder="per esempio 1.9.0">
           </div>
@@ -216,9 +223,10 @@ td:last-child, th:last-child { text-align: right; }
   <div class="elenco" id="elenco"></div>
 
   <h2 id="sconti">Sconti</h2>
-  <p class="secondario">Codici offerta di Apple con il primo anno scontato, per chi non è abbonato (le famiglie nel mese di
-    prova contano come nuove). Si usano da "Hai un codice?" in Abbonamento (dalla 1.11.0) o dal link, solo con l'app
-    sull'App Store; diventano validi entro un'ora. Un codice creato non si modifica: si spegne e se ne crea un altro.</p>
+  <p class="secondario">Codici con il primo anno scontato, per chi non è abbonato (le famiglie nel mese di prova contano come
+    nuove). Si usano da "Hai un codice?" in Abbonamento (dalla 1.11.0) o dal link; diventano validi entro un'ora. Un codice creato
+    non si modifica: si spegne e se ne crea un altro. <span id="nota-android">Per ora solo su iPhone: Android arriva con la
+    chiave di Google.</span></p>
   <form id="modulo-sconto" class="scheda" novalidate>
     <h3>Nuovo codice</h3>
     <div class="coppia">
@@ -299,6 +307,7 @@ const CANALI = { vocale_app: "Vocale nell'app", testo: "Scritto nell'app", condi
 const TIPI = { vocale: 'Messaggi a voce', testo: 'Messaggi scritti', profilo: 'Racconti del profilo',
   scuole: 'Ricerca scuole', scuole_web: 'Scuole dal web', lettura: 'Foto e PDF letti' };
 const PIANI = { free: 'Gratuito', premium: 'Premium' };
+const TELEFONI = { ios: 'iPhone', android: 'Android' };
 const PAGINE = { '/come-funziona': 'Come funziona', '/per-iniziare': 'Per iniziare', '/abbonamento': 'Abbonamento',
   '/impostazioni': 'Impostazioni', '/invita': 'Invita', '/calendario': 'Calendario', '/da-fare': 'Da fare',
   '/famiglia': 'Famiglia' };
@@ -462,6 +471,7 @@ function statoDi(c) {
 }
 function pubblicoDi(c) {
   const parti = [c.piano ? PIANI[c.piano] : 'Tutti i piani'];
+  if (c.piattaforma) parti.push('solo ' + TELEFONI[c.piattaforma]);
   if (c.dalla_versione) parti.push('dalla ' + c.dalla_versione);
   if (c.fino_alla_versione) parti.push('fino alla ' + c.fino_alla_versione);
   return parti.join(', ');
@@ -502,7 +512,7 @@ async function accendi(c, attiva) {
   caricaComunicazioni();
 }
 
-const campi = ['titolo', 'testo', 'tipo', 'piano', 'dalla', 'fino', 'dal', 'al', 'tasto', 'link'];
+const campi = ['titolo', 'testo', 'tipo', 'piano', 'piattaforma', 'dalla', 'fino', 'dal', 'al', 'tasto', 'link'];
 function apriModulo(c) {
   inModifica = c?.id ?? null;
   $('modulo-titolo').textContent = c ? 'Modifica la comunicazione' : 'Nuova comunicazione';
@@ -511,6 +521,7 @@ function apriModulo(c) {
   $('c-testo').value = c?.testo ?? '';
   $('c-tipo').value = c?.tipo ?? 'servizio';
   $('c-piano').value = c?.piano ?? '';
+  $('c-piattaforma').value = c?.piattaforma ?? '';
   $('c-dalla').value = c?.dalla_versione ?? '';
   $('c-fino').value = c?.fino_alla_versione ?? '';
   $('c-dal').value = perCampo(c?.dal ?? new Date().toISOString());
@@ -535,6 +546,10 @@ function aggiornaAnteprima() {
   const commerciale = $('c-tipo').value === 'commerciale';
   if (commerciale) $('c-piano').value = 'free';
   $('c-piano').disabled = commerciale;
+  // Un link dell'App Store solo su iPhone (vincolo nel database).
+  const diApple = /^https:\/\/apps\.apple\.com\//.test($('c-link').value.trim());
+  if (diApple) $('c-piattaforma').value = 'ios';
+  $('c-piattaforma').disabled = diApple;
   $('conta-titolo').textContent = `${$('c-titolo').value.length}/80`;
   $('conta-testo').textContent = `${$('c-testo').value.length}/600`;
   // Come nell'app: in cima, al massimo quadrata.
@@ -613,6 +628,7 @@ $('modulo').onsubmit = async (e) => {
   const v = (id) => $(id).value.trim();
   const riga = {
     titolo: v('c-titolo'), testo: v('c-testo'), tipo: v('c-tipo'), piano: v('c-piano') || null,
+    piattaforma: v('c-piattaforma') || null,
     dalla_versione: v('c-dalla') || null, fino_alla_versione: v('c-fino') || null,
     dal: new Date(v('c-dal') || Date.now()).toISOString(), al: v('c-al') ? new Date(v('c-al')).toISOString() : null,
     tasto: v('c-tasto') || null, link: v('c-link') || null, attiva: $('c-attiva').checked,
@@ -657,8 +673,9 @@ $('modulo').onsubmit = async (e) => {
   caricaComunicazioni();
 };
 
-// Sconti (spec docs/superpowers/specs/2026-10-30-sconti-flash-design.md): codici offerta di Apple dalla funzione
-// sconti, che parla con App Store Connect. Lo stato è quello di Apple, quindi il caricamento richiede qualche secondo.
+// Sconti (spec docs/superpowers/specs/2026-10-30-sconti-flash-design.md, 2026-11-03-android-sconti-design.md): codici
+// dalla funzione sconti, che parla con App Store Connect e Google Play. Lo stato è quello di Apple, quindi il caricamento
+// richiede qualche secondo.
 let pieno = null; // { prezzo, netto } del prezzo pieno in Italia
 let prezziSconto = []; // [{ prezzo, netto }] nel menu
 const giornoLungo = (d) => new Date(d + 'T12:00:00').toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric',
@@ -698,6 +715,7 @@ async function caricaSconti() {
     return;
   }
   pieno = s.pieno;
+  $('nota-android').hidden = !!s.android;
   // I prezzi in .99, dal più alto; di partenza 19,99 (il prezzo della community).
   const scelto = Number($('s-prezzo').value) || 19.99;
   prezziSconto = s.prezzi.filter((p) => Math.round(p.prezzo * 100) % 100 === 99);
@@ -713,7 +731,8 @@ async function caricaSconti() {
     return el('article', { className: 'scheda comunicazione' + (c.stato === 'attivo' ? '' : ' spenta') },
       el('h4', {}, el('span', { className: 'stato', textContent: STATI_CODICE[c.stato] }), c.codice),
       el('p', { className: 'dettagli', textContent: `${c.prezzo != null ? euro(c.prezzo) : '?'} il primo anno · ${fino} · ` +
-        `al massimo ${intero.format(c.quanti)} persone` + (c.creato ? ` · creato il ${dataOra(c.creato)}` : '') }),
+        `al massimo ${intero.format(c.quanti)} persone` + (c.creato ? ` · creato il ${dataOra(c.creato)}` : '') +
+        (c.usi_android != null ? ` · usato su Android da ${intero.format(c.usi_android)}` : '') }),
       el('p', { className: 'dettagli', textContent: c.link }),
       ...(c.stato === 'attivo' ? [el('div', { className: 'tasti' },
         el('button', { className: 'contorno', textContent: 'Copia il link',
@@ -783,7 +802,7 @@ $('modulo-sconto').onsubmit = async (e) => {
 async function spegniSconto(c) {
   if (!confirm(`Spengo ${c.codice}? Smette subito di funzionare; chi l'ha già usato non perde niente.`)) return;
   try {
-    await sconti({ azione: 'spegni', id: c.id });
+    await sconti({ azione: 'spegni', id: c.id, codice: c.codice });
   } catch (errore) {
     alert('Non spento: ' + errore.message);
   }
@@ -798,7 +817,9 @@ function comunicaSconto(c) {
   $('c-testo').value = (c.ultimo_giorno ? `Fino a ${giornoLungo(c.ultimo_giorno)} compreso, con` : 'Con') +
     ` il codice ${c.codice} il primo anno costa ${euro(c.prezzo)} invece di ${euro(pieno.prezzo)}, per tutta la famiglia.`;
   $('c-tasto').value = 'Usa il codice';
-  $('c-link').value = c.link;
+  // Dentro l'app, per tutti i telefoni: su iPhone apre la pagina di Apple, su Android applica il codice. Finché la funzione
+  // sconti dà il link di Apple si usa quello: le app per iPhone di oggi non leggono il codice dal tasto interno.
+  $('c-link').value = c.link.startsWith('https://apps.apple.com/') ? c.link : '/abbonamento?codice=' + c.codice;
   $('c-al').value = perCampo(c.fine);
   aggiornaAnteprima();
 }

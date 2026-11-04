@@ -32,13 +32,35 @@ footer { margin-top: 40px; font-size: 15px; color: var(--secondario); }
   text-decoration: none; font-weight: 600; }
 </style>
 <script>
-var s = new URLSearchParams(location.search).get("s") || "";
-var app = "scaricomentale://apri" + (/^\d{4}-\d{2}-\d{2}$/.test(s) ? "?s=" + s : "");
-document.addEventListener("DOMContentLoaded", function () { document.getElementById("apri").href = app; });
-location.href = app;
+var q = new URLSearchParams(location.search);
+var s = q.get("s") || "";
+var codice = (q.get("codice") || "").toUpperCase();
+if (!/^[A-Z0-9]{1,64}$/.test(codice)) codice = "";
+var play = "https://play.google.com/store/apps/details?id=app.scaricomentale.mobile";
+var android = /Android/i.test(navigator.userAgent);
+var app = "scaricomentale://apri" + (codice ? "?codice=" + codice : /^\d{4}-\d{2}-\d{2}$/.test(s) ? "?s=" + s : "");
+document.addEventListener("DOMContentLoaded", function () {
+  document.getElementById("apri").href = app;
+  if (!codice) return;
+  document.getElementById("titolo").textContent = "Il tuo codice: " + codice;
+  document.getElementById("nota").textContent = "Nell'app: Impostazioni, Abbonamento, Hai un codice?";
+  if (android) {
+    var scarica = document.getElementById("scarica");
+    scarica.href = play;
+    scarica.hidden = false;
+  }
+});
+if (codice && android) {
+  location.href = "intent://apri?codice=" + codice + "#Intent;scheme=scaricomentale;package=app.scaricomentale.mobile;S.browser_fallback_url=" + encodeURIComponent(play) + ";end";
+} else if (codice && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
+  location.href = "https://apps.apple.com/redeem?ctx=offercodes&id=6820186600&code=" + codice;
+} else if (!codice) {
+  location.href = app;
+}
 </script>
 </head>
-<body><main class="attesa"><h2>Apro Scarico mentale…</h2>
+<body><main class="attesa"><h2 id="titolo">Apro Scarico mentale…</h2>
 <a id="apri" class="tasto" href="scaricomentale://apri">Apri l'app</a>
-<p class="secondario">Se non si apre da sola, tocca il tasto.</p></main></body>
+<a id="scarica" class="tasto" href="#" hidden>Scarica l'app</a>
+<p class="secondario" id="nota">Se non si apre da sola, tocca il tasto.</p></main></body>
 </html>
