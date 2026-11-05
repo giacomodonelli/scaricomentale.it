@@ -11,99 +11,190 @@
 <title>Dashboard · Scarico mentale</title>
 <link rel="icon" href="/icona.png">
 <style>
-:root { --sfondo: #EEEBFB; --scheda: #FFFFFF; --testo: #1E1B3A; --secondario: #5D5A78; --accento: #5A4BD1;
-  --linea: rgba(30, 27, 58, 0.12); --errore: #B3261E; }
+:root { color-scheme: light dark;
+  --sfondo: #EEEBFB; --scheda: #FFFFFF; --riquadro: #F3F1FC; --testo: #1E1B3A; --secondario: #57536F; --accento: #5A4BD1;
+  --su-accento: #FFFFFF; --linea: rgba(30, 27, 58, 0.1); --griglia: rgba(30, 27, 58, 0.08); --errore: #B3261E;
+  --verde: #17704A; --verde-fondo: #DDF3E8; --arancio: #9A5208; --arancio-fondo: #FCE8D2; --viola-fondo: #E6E2FA;
+  --grigio-fondo: #ECEAF5; --ombra: 0 4px 18px rgba(30, 27, 58, 0.06); --barra-alta: rgba(238, 235, 251, 0.82);
+  --luce: radial-gradient(circle at 92% 0%, rgba(253, 214, 178, 0.85) 0%, rgba(238, 235, 251, 0) 58%),
+    radial-gradient(circle at 0% 18%, rgba(205, 195, 247, 0.8) 0%, rgba(238, 235, 251, 0) 55%); }
 @media (prefers-color-scheme: dark) {
-  :root { --sfondo: #16142B; --scheda: #221F3D; --testo: #F1EFFB; --secondario: #B5B1D3; --accento: #A99CFF;
-    --linea: rgba(241, 239, 251, 0.14); --errore: #FF8A80; }
+  :root { --sfondo: #16142B; --scheda: #221F3D; --riquadro: #2C2950; --testo: #F1EFFB; --secondario: #B5B1D3;
+    --accento: #A99CFF; --su-accento: #16142B; --linea: rgba(241, 239, 251, 0.14); --griglia: rgba(241, 239, 251, 0.1);
+    --errore: #FF8A80; --verde: #8FE0B8; --verde-fondo: #1C3B33; --arancio: #F9BE85; --arancio-fondo: #43311F;
+    --viola-fondo: #36315F; --grigio-fondo: #302D4F; --ombra: none; --barra-alta: rgba(22, 20, 43, 0.82);
+    --luce: radial-gradient(circle at 92% 0%, rgba(120, 78, 60, 0.3) 0%, rgba(22, 20, 43, 0) 55%),
+      radial-gradient(circle at 0% 18%, rgba(90, 75, 209, 0.28) 0%, rgba(22, 20, 43, 0) 55%); }
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--sfondo); color: var(--testo); font: 16px/1.5 -apple-system, BlinkMacSystemFont,
-  "Segoe UI", Roboto, sans-serif; }
-main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 64px; }
-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-header img { width: 40px; height: 40px; border-radius: 10px; }
-header strong { font-size: 19px; margin-right: auto; }
-nav { display: flex; gap: 16px; align-items: center; }
-a, .link { color: var(--accento); background: none; border: 0; padding: 0; font: inherit; cursor: pointer;
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+body { margin: 0; color: var(--testo); background-color: var(--sfondo); background-repeat: no-repeat; background-size: 100% 620px;
+  background-image: linear-gradient(to bottom, transparent 45%, var(--sfondo) 100%), var(--luce);
+  font: 16px/1.5 "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased; }
+a, .link { color: var(--accento); background: none; border: 0; padding: 0; font: inherit; font-weight: 600; cursor: pointer;
   text-decoration: none; }
-h2 { font-size: 24px; margin: 32px 0 4px; }
-h3 { font-size: 15px; margin: 0 0 8px; color: var(--secondario); font-weight: 600; }
+h2 { font-size: 28px; line-height: 1.2; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
+h3 { font-size: 14px; margin: 0 0 8px; color: var(--secondario); font-weight: 600; }
 p { margin: 0 0 12px; }
 .secondario { color: var(--secondario); }
 .errore { color: var(--errore); }
-.scheda { background: var(--scheda); border-radius: 18px; padding: 18px 20px; }
-.stretta { max-width: 420px; margin: 10vh auto 0; }
-label { display: block; font-size: 14px; font-weight: 600; margin: 12px 0 4px; }
+
+.alta { position: sticky; top: 0; z-index: 5; background: var(--barra-alta); -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px); }
+.alta > div { max-width: 1120px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; gap: 16px; }
+.marchio { display: flex; align-items: center; gap: 10px; margin-right: auto; min-width: 0; }
+.marchio img { width: 36px; height: 36px; border-radius: 10px; flex: none; }
+.marchio strong { font-size: 16px; font-weight: 800; white-space: nowrap; }
+.marchio span { color: var(--secondario); font-size: 14px; }
+#menu { display: flex; align-items: center; gap: 4px; }
+#menu a { color: var(--secondario); padding: 8px 14px; border-radius: 999px; font-size: 14px; white-space: nowrap; }
+#menu a:hover { color: var(--testo); }
+#menu a.attivo { background: var(--scheda); color: var(--accento); box-shadow: var(--ombra); }
+.conta { display: inline-block; min-width: 20px; padding: 0 6px; margin-left: 6px; border-radius: 999px; font-size: 12px;
+  line-height: 20px; text-align: center; font-weight: 700; background: var(--arancio-fondo); color: var(--arancio); }
+.servizio { display: flex; gap: 16px; font-size: 14px; white-space: nowrap; }
+
+main { max-width: 1120px; margin: 0 auto; padding: 12px 24px 80px; }
+.parte { scroll-margin-top: 76px; padding-top: 36px; }
+.intesta { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap;
+  margin-bottom: 18px; }
+.intesta p { color: var(--secondario); font-size: 14.5px; margin: 6px 0 0; max-width: 68ch; }
+
+.scheda { background: var(--scheda); border-radius: 24px; padding: 22px 24px; box-shadow: var(--ombra); }
+.stretta { max-width: 420px; margin: 12vh auto 0; padding: 32px; }
+.stretta h2 { font-size: 24px; margin-bottom: 4px; }
+
+label { display: block; font-size: 14px; font-weight: 600; margin: 14px 0 6px; }
 label .secondario { font-weight: 400; }
-input, select, textarea { width: 100%; font: inherit; color: var(--testo); background: var(--sfondo);
-  border: 1px solid var(--linea); border-radius: 10px; padding: 9px 11px; }
-textarea { min-height: 110px; resize: vertical; }
+input, select, textarea { width: 100%; font: inherit; font-size: 15px; color: var(--testo); background: var(--riquadro);
+  border: 1px solid transparent; border-radius: 14px; padding: 10px 14px; }
+input[type="checkbox"] { accent-color: var(--accento); }
+textarea { min-height: 120px; resize: vertical; }
 input:focus, select:focus, textarea:focus { outline: 2px solid var(--accento); outline-offset: -1px; }
-.primario { background: var(--accento); color: var(--scheda); border: 0; border-radius: 999px; padding: 10px 20px;
-  font: inherit; font-weight: 600; cursor: pointer; }
-.contorno { background: none; color: var(--accento); border: 1px solid var(--accento); border-radius: 999px;
-  padding: 6px 14px; font: inherit; font-size: 14px; cursor: pointer; }
-.tasti { display: flex; gap: 12px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
-.tessere { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 12px; }
-.tessera .valore { font-size: 30px; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
-.tessera .nota { font-size: 14px; color: var(--secondario); margin: 4px 0 0; }
-.griglia { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 12px; }
-figure { margin: 0; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accento); outline-offset: 2px; }
+.primario { background: var(--accento); color: var(--su-accento); border: 0; border-radius: 999px; padding: 12px 22px;
+  font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.primario:disabled { opacity: 0.5; cursor: default; }
+.contorno { background: none; color: var(--accento); border: 1px solid var(--linea); border-radius: 999px; padding: 7px 14px;
+  font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.contorno:hover { background: var(--riquadro); }
+.tasti { display: flex; gap: 12px; align-items: center; margin-top: 18px; flex-wrap: wrap; }
+
+.tessere { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.tessere + .tessere, .griglia { margin-top: 14px; }
+.tessera h3 { margin-bottom: 4px; }
+.tessera .valore { font-size: 38px; line-height: 1.15; font-weight: 800; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums; }
+.tessera ul { list-style: none; margin: 10px 0 0; padding: 0; font-size: 13.5px; color: var(--secondario); display: grid; gap: 2px; }
+.tessere.minori .tessera { padding: 18px 24px; }
+.tessere.minori .valore { font-size: 26px; }
+.griglia { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 14px; }
+figure { margin: 0; min-width: 0; }
 svg { display: block; width: 100%; height: auto; overflow: visible; }
 .barra { fill: var(--accento); }
 .zona { fill: transparent; }
-.zona:hover { fill: var(--linea); }
+.zona:hover { fill: var(--griglia); }
 .asse { stroke: var(--linea); stroke-width: 1; }
-.etichetta { fill: var(--secondario); font-size: 12px; }
-details { margin-top: 8px; font-size: 14px; }
-summary { color: var(--accento); cursor: pointer; }
-table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.traccia-griglia { stroke: var(--griglia); stroke-width: 1; stroke-dasharray: 3 4; }
+.etichetta { fill: var(--secondario); font-size: 12px; font-variant-numeric: tabular-nums; }
+details { margin-top: 10px; font-size: 14px; }
+summary { color: var(--accento); cursor: pointer; font-weight: 600; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; margin-top: 8px; }
 td, th { text-align: left; padding: 6px 0; border-bottom: 1px solid var(--linea); }
 td:last-child, th:last-child { text-align: right; }
+.barre { display: grid; gap: 14px; margin-top: 12px; }
+.barre .riga { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; font-size: 14px; }
+.barre .numero { font-weight: 600; font-variant-numeric: tabular-nums; }
+.barre .traccia { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--riquadro); overflow: hidden; }
+.barre .traccia span { display: block; height: 100%; border-radius: 3px; background: var(--accento); }
 .suggerimento { position: fixed; pointer-events: none; background: var(--testo); color: var(--sfondo); font-size: 13px;
-  padding: 5px 9px; border-radius: 8px; white-space: nowrap; z-index: 10; }
-.modulo { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; margin-top: 12px; }
-@media (max-width: 760px) { .modulo { grid-template-columns: minmax(0, 1fr); } }
-.coppia { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.anteprima { background: var(--sfondo); border-radius: 22px; padding: 10px 20px 22px; align-self: start;
-  position: sticky; top: 16px; }
+  font-weight: 600; padding: 5px 10px; border-radius: 10px; white-space: nowrap; z-index: 10; }
+
+.modulo { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 28px; margin-top: 4px; }
+.coppia { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+form.scheda { margin-bottom: 14px; scroll-margin-top: 84px; }
+#s-nota { margin: 14px 0 0; font-size: 14px; }
+.anteprima { background: var(--sfondo); border-radius: 24px; padding: 10px 20px 22px; align-self: start; position: sticky;
+  top: 84px; }
 .anteprima .grabber { width: 36px; height: 5px; border-radius: 3px; background: var(--linea); margin: 0 auto 18px; }
 .anteprima img { display: block; width: 100%; object-fit: contain; border-radius: 14px; background: var(--linea);
   margin-bottom: 12px; }
-.anteprima .titolo { font-size: 22px; font-weight: 700; margin: 0 0 8px; overflow-wrap: anywhere; }
+.anteprima .titolo { font-size: 22px; font-weight: 800; margin: 0 0 8px; overflow-wrap: anywhere; }
 .anteprima .testo { color: var(--secondario); white-space: pre-wrap; overflow-wrap: anywhere; }
-.anteprima .finto { display: block; text-align: center; border-radius: 999px; padding: 12px; font-weight: 600;
-  margin-top: 8px; }
-.anteprima .finto.pieno { background: var(--accento); color: var(--scheda); }
+.anteprima .finto { display: block; text-align: center; border-radius: 999px; padding: 12px; font-weight: 700; margin-top: 8px; }
+.anteprima .finto.pieno { background: var(--accento); color: var(--su-accento); }
 .anteprima .finto.vuoto { color: var(--accento); }
-.elenco { display: grid; gap: 12px; margin-top: 12px; }
-.comunicazione h4 { margin: 0 0 4px; font-size: 17px; overflow-wrap: anywhere; }
-.comunicazione .testo { color: var(--secondario); white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 8px; }
-.comunicazione .dettagli { font-size: 14px; color: var(--secondario); margin: 0; }
-.comunicazione .miniatura { display: block; max-width: 160px; max-height: 120px; border-radius: 10px; margin: 4px 0 8px; }
-.stato { display: inline-block; font-size: 13px; font-weight: 600; border-radius: 999px; padding: 2px 10px;
-  border: 1px solid currentColor; margin-right: 6px; }
-.spenta { opacity: 0.6; }
+
+.elenco { display: grid; gap: 12px; }
+.vuoto { background: none; box-shadow: none; border: 1px dashed var(--linea); color: var(--secondario); text-align: center;
+  padding: 28px 24px; margin: 0; border-radius: 24px; }
+.voce { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 24px; align-items: start; }
+.voce .testa { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.voce h4 { margin: 0; font-size: 16px; font-weight: 700; overflow-wrap: anywhere; }
+.voce .testo { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0 0 8px; }
+.voce .dettagli { font-size: 13.5px; color: var(--secondario); margin: 0; overflow-wrap: anywhere; }
+.voce .miniatura { display: block; max-width: 160px; max-height: 120px; border-radius: 12px; margin: 0 0 8px; }
+.voce .azioni { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+.voce.spenta > div:first-child { opacity: 0.62; }
+.stato { display: inline-block; font-size: 12.5px; font-weight: 700; border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
+.stato.ok { background: var(--verde-fondo); color: var(--verde); }
+.stato.attesa { background: var(--viola-fondo); color: var(--accento); }
+.stato.avviso { background: var(--arancio-fondo); color: var(--arancio); }
+.stato.fermo { background: var(--grigio-fondo); color: var(--secondario); }
+
+@media (max-width: 860px) {
+  .alta > div { flex-wrap: wrap; padding: 10px 16px; gap: 6px 12px; }
+  #menu { order: 3; width: 100%; overflow-x: auto; scrollbar-width: none; margin: 0 -4px; }
+  #menu::-webkit-scrollbar { display: none; }
+  main { padding: 4px 16px 64px; }
+  .parte { scroll-margin-top: 104px; }
+  .modulo { grid-template-columns: minmax(0, 1fr); }
+  .anteprima { position: static; }
+}
+@media (max-width: 560px) {
+  h2 { font-size: 24px; }
+  .marchio span { display: none; }
+  .scheda { padding: 18px; border-radius: 20px; }
+  .tessere.minori .tessera:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .tessere { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .tessera .valore { font-size: 28px; }
+  .tessere.minori .tessera { padding: 16px 18px; }
+  .tessere.minori .valore { font-size: 22px; }
+  .voce { grid-template-columns: minmax(0, 1fr); }
+  .voce .azioni { flex-direction: row; flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
 </head>
 <body>
-<main>
-<header>
-  <img src="/icona.png" alt="">
-  <strong>Scarico mentale · Dashboard</strong>
+<header class="alta"><div>
+  <div class="marchio">
+    <img src="/icona.png" alt="">
+    <strong>Scarico mentale</strong>
+    <span>Dashboard</span>
+  </div>
   <nav id="menu" hidden>
     <a href="#numeri">Numeri</a>
-    <a href="#segnalazioni">Segnalazioni</a>
+    <a href="#segnalazioni">Segnalazioni<span class="conta" id="conta-segnalazioni" hidden></span></a>
     <a href="#comunicazioni">Comunicazioni</a>
     <a href="#sconti">Sconti</a>
-    <button class="link" id="esci">Esci</button>
   </nav>
-</header>
+  <div class="servizio" id="servizio" hidden>
+    <button class="link" id="aggiorna">Aggiorna</button>
+    <button class="link" id="esci">Esci</button>
+  </div>
+</div></header>
+<main>
 
 <section id="accesso" class="scheda stretta" hidden>
-  <h3>Accesso</h3>
+  <h2>Entra</h2>
+  <p class="secondario">Con l'email dell'account e un codice, come nell'app.</p>
   <form id="modulo-email">
     <label for="email">Email dell'account</label>
     <input id="email" type="email" autocomplete="email" required>
@@ -125,27 +216,44 @@ td:last-child, th:last-child { text-align: right; }
 </section>
 
 <div id="pannello" hidden>
-  <h2 id="numeri">Numeri</h2>
-  <p class="secondario">Senza la famiglia finta della revisione di Apple. Giorni di Roma. <span id="nota-cambio"></span>
-    <button class="link" id="aggiorna">Aggiorna</button></p>
-  <div class="tessere" id="tessere"></div>
-  <div class="griglia">
-    <figure class="scheda" id="grafico-messaggi"></figure>
-    <figure class="scheda" id="grafico-costo"></figure>
-  </div>
-  <div class="griglia">
-    <div class="scheda"><h3>Messaggi per canale, 30 giorni</h3><table id="canali"></table></div>
-    <div class="scheda"><h3>Consumi dell'LLM per tipo, 30 giorni</h3><table id="tipi"></table></div>
-  </div>
+  <section class="parte" id="numeri">
+    <div class="intesta">
+      <div>
+        <h2>Numeri</h2>
+        <p>Senza la famiglia finta della revisione di Apple. Giorni di Roma. <span id="nota-cambio"></span></p>
+      </div>
+    </div>
+    <div class="tessere" id="tessere"></div>
+    <div class="tessere minori" id="tessere-minori"></div>
+    <div class="griglia">
+      <figure class="scheda" id="grafico-messaggi"></figure>
+      <figure class="scheda" id="grafico-costo"></figure>
+    </div>
+    <div class="griglia">
+      <div class="scheda"><h3>Messaggi per canale, 30 giorni</h3><div class="barre" id="canali"></div></div>
+      <div class="scheda"><h3>Consumi dell'LLM per tipo, 30 giorni</h3><div class="barre" id="tipi"></div></div>
+    </div>
+  </section>
 
-  <h2 id="segnalazioni">Segnalazioni</h2>
-  <p class="secondario">Problemi e idee scritti da Impostazioni nell'app, senza chi li ha scritti. Il lunedì mattina arriva la mail
-    con le nuove, quelle ancora aperte e quelle risolte.</p>
-  <div class="elenco" id="elenco-segnalazioni"></div>
+  <section class="parte" id="segnalazioni">
+    <div class="intesta">
+      <div>
+        <h2>Segnalazioni</h2>
+        <p>Problemi e idee scritti da Impostazioni nell'app, senza chi li ha scritti. Il lunedì mattina arriva la mail con le
+          nuove, quelle ancora aperte e quelle risolte.</p>
+      </div>
+    </div>
+    <div class="elenco" id="elenco-segnalazioni"></div>
+  </section>
 
-  <h2 id="comunicazioni">Comunicazioni</h2>
-  <p class="secondario">Compaiono nell'app all'apertura, una volta sola per persona, mai nel primo giorno con l'app.</p>
-  <div class="tasti"><button class="primario" id="nuova">Nuova comunicazione</button></div>
+  <section class="parte" id="comunicazioni">
+    <div class="intesta">
+      <div>
+        <h2>Comunicazioni</h2>
+        <p>Compaiono nell'app all'apertura, una volta sola per persona, mai nel primo giorno con l'app.</p>
+      </div>
+      <button class="primario" id="nuova">Nuova comunicazione</button>
+    </div>
 
   <form id="modulo" class="scheda" hidden novalidate>
     <h3 id="modulo-titolo">Nuova comunicazione</h3>
@@ -209,7 +317,7 @@ td:last-child, th:last-child { text-align: right; }
           caricarla)</span></label>
         <input id="c-immagine" type="file" accept="image/jpeg,image/png,image/webp">
         <button type="button" class="link" id="togli-immagine" hidden>Togli l'immagine</button>
-        <label><input id="c-attiva" type="checkbox" style="width: auto; margin-right: 6px;">Attiva</label>
+        <label><input id="c-attiva" type="checkbox" style="width: auto; margin-right: 8px;">Attiva</label>
         <p class="secondario" id="nota-modifica" hidden>Chi l'ha già vista non la rivede anche se la cambi.</p>
         <p class="errore" id="esito-modulo"></p>
         <div class="tasti">
@@ -227,13 +335,20 @@ td:last-child, th:last-child { text-align: right; }
     </div>
   </form>
   <div class="elenco" id="elenco"></div>
+  </section>
 
-  <h2 id="sconti">Sconti</h2>
-  <p class="secondario">Codici con il primo anno scontato, per chi non è abbonato (le famiglie nel mese di prova contano come
-    nuove). Si usano da "Hai un codice?" in Abbonamento (dalla 1.11.0) o dal link; diventano validi entro un'ora. Un codice creato
-    non si modifica: si spegne e se ne crea un altro. <span id="nota-android">Per ora solo su iPhone: Android arriva con la
-    chiave di Google.</span></p>
-  <form id="modulo-sconto" class="scheda" novalidate>
+  <section class="parte" id="sconti">
+    <div class="intesta">
+      <div>
+        <h2>Sconti</h2>
+        <p>Codici con il primo anno scontato, per chi non è abbonato (le famiglie nel mese di prova contano come nuove). Si usano
+          da "Hai un codice?" in Abbonamento (dalla 1.11.0) o dal link; diventano validi entro un'ora. Un codice creato non si
+          modifica: si spegne e se ne crea un altro. <span id="nota-android">Per ora solo su iPhone: Android arriva con la chiave
+          di Google.</span></p>
+      </div>
+      <button class="primario" id="nuovo-sconto">Nuovo codice</button>
+    </div>
+  <form id="modulo-sconto" class="scheda" hidden novalidate>
     <h3>Nuovo codice</h3>
     <div class="coppia">
       <div>
@@ -258,9 +373,13 @@ td:last-child, th:last-child { text-align: right; }
     </div>
     <p class="secondario" id="s-nota"></p>
     <p class="errore" id="esito-sconto"></p>
-    <div class="tasti"><button class="primario" id="crea-sconto">Crea il codice</button></div>
+    <div class="tasti">
+      <button class="primario" id="crea-sconto">Crea il codice</button>
+      <button type="button" class="link" id="annulla-sconto">Annulla</button>
+    </div>
   </form>
   <div class="elenco" id="codici"></div>
+  </section>
 </div>
 </main>
 <div class="suggerimento" id="suggerimento" hidden></div>
@@ -357,7 +476,7 @@ db.auth.onAuthStateChange((_evento, sessione) => {
 });
 
 async function mostra() {
-  $('accesso').hidden = $('negato').hidden = $('pannello').hidden = $('menu').hidden = true;
+  $('accesso').hidden = $('negato').hidden = $('pannello').hidden = $('menu').hidden = $('servizio').hidden = true;
   if (!utente) {
     $('modulo-email').hidden = false;
     $('modulo-codice').hidden = true;
@@ -365,7 +484,7 @@ async function mostra() {
     $('accesso').hidden = false;
     return;
   }
-  $('menu').hidden = false;
+  $('servizio').hidden = false;
   const { data: ammesso } = await db.rpc('sono_amministratore');
   if (!ammesso) {
     $('email-negata').textContent = utente.email;
@@ -373,17 +492,42 @@ async function mostra() {
     return;
   }
   $('pannello').hidden = false;
+  $('menu').hidden = false;
   caricaNumeri();
   caricaSegnalazioni();
   caricaComunicazioni();
   caricaSconti();
 }
+const voci = [...document.querySelectorAll('#menu a')];
+const osserva = new IntersectionObserver((scorse) => {
+  for (const parte of scorse) {
+    if (parte.isIntersecting) for (const v of voci) v.classList.toggle('attivo', v.hash === '#' + parte.target.id);
+  }
+}, { rootMargin: '-20% 0px -70% 0px' });
+for (const parte of document.querySelectorAll('.parte')) osserva.observe(parte);
+
 $('aggiorna').onclick = () => { caricaNumeri(); caricaSegnalazioni(); caricaComunicazioni(); caricaSconti(); };
 
 // Numeri
-function tessera(titolo, valore, nota) {
+function tessera(titolo, valore, righe) {
   return el('div', { className: 'scheda tessera' }, el('h3', { textContent: titolo }),
-    el('div', { className: 'valore', textContent: valore }), el('p', { className: 'nota', textContent: nota }));
+    el('div', { className: 'valore', textContent: valore }),
+    el('ul', {}, ...righe.filter(Boolean).map((r) => el('li', { textContent: r }))));
+}
+
+// Etichetta e numero con una barra in proporzione al più grande.
+function barre(contenitore, righe) {
+  if (!righe.length) {
+    contenitore.replaceChildren(el('p', { className: 'secondario', textContent: 'Niente in 30 giorni.' }));
+    return;
+  }
+  const max = Math.max(...righe.map((r) => r.quanto));
+  contenitore.replaceChildren(...righe.slice().sort((x, y) => y.quanto - x.quanto).map((r) => {
+    const pieno = el('span');
+    pieno.style.width = `${max > 0 ? Math.max(2, 100 * r.quanto / max) : 0}%`;
+    return el('div', { className: 'riga' }, el('span', { textContent: r.nome }),
+      el('span', { className: 'numero', textContent: r.testo }), el('div', { className: 'traccia' }, pieno));
+  }));
 }
 
 async function caricaNumeri() {
@@ -398,36 +542,69 @@ async function caricaNumeri() {
   const { famiglie: f, abbonamenti: a, incassi: i, persone: p, messaggi: m, consumi: c } = n;
   $('tessere').replaceChildren(
     tessera('Famiglie', intero.format(f.totale),
-      `${f.premium} premium (${f.omaggio} in omaggio) · ${f.nuove_7} nuove in 7 giorni, ${f.nuove_30} in 30`),
-    tessera('Famiglie attive, 7 giorni', intero.format(f.attive_7), `con almeno un messaggio · ${f.attive_30} in 30 giorni`),
-    tessera('Messaggi oggi', intero.format(m.oggi), `${intero.format(m.giorni_7)} in 7 giorni · ` +
-      `${intero.format(m.giorni_30)} in 30` + (m.errori_7 ? ` · ${m.errori_7} in errore in 7 giorni` : '')),
-    tessera('Costo LLM, 30 giorni', costo(c.costo_usd_30),
-      `${costo(c.costo_usd_7)} in 7 giorni · ${costo(c.costo_medio_usd)} a messaggio`),
-    tessera('Abbonamenti attivi', intero.format(a.attivi), `${a.in_prova} in prova · ${a.rinnovo_spento} con il rinnovo spento`),
-    tessera('Incassi del mese', euro(i.mese), `${intero.format(i.mese_n)} ${i.mese_n === 1 ? 'pagamento' : 'pagamenti'}, ` +
-      `IVA compresa · netto stimato ${euro(netto(i.mese))} · mese scorso ${euro(i.mese_scorso)} · ` +
-      `da sempre ${euro(i.totale)}` + (i.rimborsi ? ` · rimborsi: ${i.rimborsi}` : '')),
-    tessera('Adulti con l\'app', intero.format(p.adulti_app),
-      `${p.adulti_senza_app} senza app · ${p.figli} figli · ${p.whatsapp} con WhatsApp`),
+      [`${f.premium} premium, ${f.omaggio} in omaggio`, `${f.nuove_7} nuove in 7 giorni, ${f.nuove_30} in 30`]),
+    tessera('Famiglie attive, 7 giorni', intero.format(f.attive_7), ['con almeno un messaggio', `${f.attive_30} in 30 giorni`]),
+    tessera('Messaggi oggi', intero.format(m.oggi), [`${intero.format(m.giorni_7)} in 7 giorni, ${intero.format(m.giorni_30)} in 30`,
+      m.errori_7 ? `${m.errori_7} in errore in 7 giorni` : null]),
+    tessera('Incassi del mese', euro(i.mese), [`${intero.format(i.mese_n)} ${i.mese_n === 1 ? 'pagamento' : 'pagamenti'}, IVA compresa`,
+      `netto stimato ${euro(netto(i.mese))}`, `mese scorso ${euro(i.mese_scorso)}`, `da sempre ${euro(i.totale)}`,
+      i.rimborsi ? `rimborsi: ${i.rimborsi}` : null]),
   );
-  grafico($('grafico-messaggi'), 'Messaggi al giorno, 30 giorni', n.giorni, 'messaggi', (v) => intero.format(v));
-  grafico($('grafico-costo'), 'Costo LLM al giorno, 30 giorni', n.giorni, 'costo_usd', costo);
-  tabella($('canali'), Object.entries(m.canali_30).map(([k, v]) => [CANALI[k] ?? k, intero.format(v)]), ['Canale', 'Messaggi']);
-  tabella($('tipi'), Object.entries(c.tipi_30).map(([k, v]) => [TIPI[k] ?? k, `${intero.format(v.n)} · ${costo(v.costo_usd)}`]),
-    ['Tipo', 'Volte · costo']);
+  $('tessere-minori').replaceChildren(
+    tessera('Abbonamenti attivi', intero.format(a.attivi), [`${a.in_prova} in prova, ${a.rinnovo_spento} con il rinnovo spento`]),
+    tessera('Costo LLM, 30 giorni', costo(c.costo_usd_30), [`${costo(c.costo_usd_7)} in 7 giorni`, `${costo(c.costo_medio_usd)} a messaggio`]),
+    tessera("Adulti con l'app", intero.format(p.adulti_app), [`${p.adulti_senza_app} senza app, ${p.figli} figli`, `${p.whatsapp} con WhatsApp`]),
+  );
+  disegnaGrafici = () => {
+    grafico($('grafico-messaggi'), 'Messaggi al giorno, 30 giorni', n.giorni, 'messaggi', (v) => intero.format(v));
+    grafico($('grafico-costo'), 'Costo LLM al giorno, 30 giorni', n.giorni, 'costo_usd', costo);
+  };
+  disegnaGrafici();
+  barre($('canali'), Object.entries(m.canali_30).map(([k, v]) => ({ nome: CANALI[k] ?? k, quanto: v, testo: intero.format(v) })));
+  barre($('tipi'), Object.entries(c.tipi_30).map(([k, v]) => ({ nome: TIPI[k] ?? k, quanto: v.costo_usd,
+    testo: `${intero.format(v.n)} · ${costo(v.costo_usd)}` })));
 }
+
+// Il disegno ha la larghezza della scheda, così le scritte restano leggibili anche sul telefono.
+let disegnaGrafici = null;
+let larghezzaGrafici = 0;
+addEventListener('resize', () => {
+  const l = $('grafico-messaggi').clientWidth;
+  if (l !== larghezzaGrafici) disegnaGrafici?.();
+});
 
 function tabella(t, righe, intestazione) {
   t.replaceChildren(el('tr', {}, ...intestazione.map((h) => el('th', { textContent: h }))),
     ...(righe.length ? righe : [['Niente in 30 giorni', '']]).map((r) => el('tr', {}, ...r.map((v) => el('td', { textContent: v })))));
 }
 
+// Il primo numero tondo sopra il massimo: dà la scala al grafico.
+function tetto(max) {
+  if (max <= 0) return 1;
+  const potenza = 10 ** Math.floor(Math.log10(max));
+  const m = max / potenza;
+  return [1, 1.5, 2, 3, 4, 5, 7.5, 10].find((passo) => m <= passo) * potenza;
+}
+
 // Barre di una sola serie: una per giorno, la zona sotto il puntatore si accende e mostra giorno e valore.
 function grafico(figura, titolo, giorni, chiave, formato) {
-  const L = 600, A = 160, base = A - 22, cima = 18, passo = L / giorni.length;
+  const stile = getComputedStyle(figura);
+  larghezzaGrafici = figura.clientWidth;
+  const L = Math.max(240, figura.clientWidth - parseFloat(stile.paddingLeft) - parseFloat(stile.paddingRight));
+  const A = 180, base = A - 22, cima = 16, passo = L / giorni.length;
   const max = Math.max(...giorni.map((g) => Number(g[chiave])));
+  const scala = tetto(max);
+  const altezza = (v) => (base - cima) * v / scala;
   const disegno = svg('svg', { viewBox: `0 0 ${L} ${A}`, role: 'img', 'aria-label': titolo });
+  const scritta = (x, y, testo, ancora) => {
+    const t = svg('text', { x, y, class: 'etichetta', 'text-anchor': ancora, 'pointer-events': 'none' });
+    t.textContent = testo;
+    return t;
+  };
+  for (const parte of max > 0 ? [0.5, 1] : []) {
+    const y = base - altezza(scala * parte);
+    disegno.append(svg('line', { x1: 0, x2: L, y1: y, y2: y, class: 'traccia-griglia' }));
+  }
   disegno.append(svg('line', { x1: 0, x2: L, y1: base, y2: base, class: 'asse' }));
   giorni.forEach((g, i) => {
     const v = Number(g[chiave]);
@@ -438,18 +615,16 @@ function grafico(figura, titolo, giorni, chiave, formato) {
     zona.addEventListener('pointerleave', () => { $('suggerimento').hidden = true; });
     disegno.append(zona);
     if (v > 0) {
-      const h = Math.max(2, (base - cima) * v / max), w = passo - 2, r = Math.min(4, w / 2, h), y = base - h, x0 = x + 1;
+      const h = Math.max(2, altezza(v)), w = Math.max(1, passo - 2), r = Math.min(4, w / 2, h), y = base - h, x0 = x + 1;
       disegno.append(svg('path', { class: 'barra', 'pointer-events': 'none',
         d: `M${x0},${base}V${y + r}Q${x0},${y} ${x0 + r},${y}H${x0 + w - r}Q${x0 + w},${y} ${x0 + w},${y + r}V${base}Z` }));
     }
   });
-  const scritta = (x, y, testo, ancora) => {
-    const t = svg('text', { x, y, class: 'etichetta', 'text-anchor': ancora });
-    t.textContent = testo;
-    return t;
-  };
-  disegno.append(scritta(0, A - 4, giorno(giorni[0].giorno), 'start'), scritta(L, A - 4, 'oggi', 'end'),
-    scritta(0, 12, max > 0 ? `massimo ${formato(max)}` : 'ancora niente', 'start'));
+  for (const parte of max > 0 ? [0.5, 1] : []) {
+    disegno.append(scritta(0, base - altezza(scala * parte) - 4, formato(scala * parte), 'start'));
+  }
+  disegno.append(scritta(0, A - 4, giorno(giorni[0].giorno), 'start'), scritta(L, A - 4, 'oggi', 'end'));
+  if (max <= 0) disegno.append(scritta(L / 2, base / 2, 'Ancora niente', 'middle'));
   const righe = giorni.slice().reverse().map((g) => [giorno(g.giorno), formato(Number(g[chiave]))]);
   const tab = el('table');
   tabella(tab, righe, ['Giorno', '']);
@@ -464,6 +639,22 @@ function posiziona(e) {
   const s = $('suggerimento');
   s.style.left = Math.min(e.clientX + 12, innerWidth - s.offsetWidth - 8) + 'px';
   s.style.top = e.clientY - 34 + 'px';
+}
+
+// Una voce di elenco, uguale per segnalazioni, comunicazioni e codici: a sinistra il contenuto, a destra i tasti.
+function voce({ pillole, titolo, immagine: foto, testo, dettagli, azioni, spenta }) {
+  return el('article', { className: 'scheda voce' + (spenta ? ' spenta' : '') },
+    el('div', {},
+      el('div', { className: 'testa' }, ...pillole.map(([nome, tono]) => el('span', { className: 'stato ' + tono, textContent: nome })),
+        titolo ? el('h4', { textContent: titolo }) : null),
+      foto ? el('img', { className: 'miniatura', src: foto, alt: '' }) : null,
+      testo ? el('p', { className: 'testo', textContent: testo }) : null,
+      ...dettagli.filter(Boolean).map((d) => el('p', { className: 'dettagli', textContent: d }))),
+    azioni?.length ? el('div', { className: 'azioni' }, ...azioni.map(([nome, azione]) =>
+      el('button', { className: 'contorno', textContent: nome, onclick: azione }))) : null);
+}
+function vuoto(testo) {
+  return el('p', { className: 'scheda vuoto', textContent: testo });
 }
 
 // Comunicazioni
@@ -493,22 +684,21 @@ async function caricaSegnalazioni() {
     $('elenco-segnalazioni').replaceChildren(el('p', { className: 'errore', textContent: 'Segnalazioni non disponibili: ' + error.message }));
     return;
   }
+  const aperte = data.filter((x) => !x.risolta_il).length;
+  $('conta-segnalazioni').textContent = String(aperte);
+  $('conta-segnalazioni').hidden = aperte === 0;
   if (!data.length) {
-    $('elenco-segnalazioni').replaceChildren(el('p', { className: 'secondario', textContent: 'Nessuna segnalazione per ora.' }));
+    $('elenco-segnalazioni').replaceChildren(vuoto('Nessuna segnalazione per ora.'));
     return;
   }
-  $('elenco-segnalazioni').replaceChildren(...data.map((s) => {
-    const telefono = { ios: 'iPhone', android: 'Android' }[s.piattaforma] ?? s.piattaforma;
-    const dettagli = [telefono, s.versione, dataOra(s.creato_il), s.nota].filter(Boolean).join(' · ');
-    return el('article', { className: 'scheda comunicazione' + (s.risolta_il ? ' spenta' : '') },
-      el('h4', {}, el('span', { className: 'stato', textContent: s.risolta_il ? 'Risolta' : 'Aperta' }),
-        `#${s.numero} · ${s.tipo === 'problema' ? 'Problema' : 'Idea'}`),
-      el('p', { className: 'testo', textContent: s.testo }),
-      el('p', { className: 'dettagli', textContent: dettagli }),
-      el('div', { className: 'tasti' },
-        el('button', { className: 'contorno', textContent: s.risolta_il ? 'Riapri' : 'Segna risolta',
-          onclick: () => chiudiSegnalazione(s) })));
-  }));
+  $('elenco-segnalazioni').replaceChildren(...data.map((x) => voce({
+    pillole: [x.tipo === 'problema' ? ['Problema', 'avviso'] : ['Idea', 'attesa'], ...(x.risolta_il ? [['Risolta', 'ok']] : [])],
+    titolo: `#${x.numero}`,
+    testo: x.testo,
+    dettagli: [[TELEFONI[x.piattaforma] ?? x.piattaforma, x.versione, dataOra(x.creato_il)].filter(Boolean).join(' · '), x.nota],
+    azioni: [[x.risolta_il ? 'Riapri' : 'Segna risolta', () => chiudiSegnalazione(x)]],
+    spenta: !!x.risolta_il,
+  })));
 }
 
 async function chiudiSegnalazione(s) {
@@ -529,24 +719,23 @@ async function caricaComunicazioni() {
     return;
   }
   if (!data.length) {
-    $('elenco').replaceChildren(el('p', { className: 'secondario', textContent: 'Nessuna comunicazione per ora.' }));
+    $('elenco').replaceChildren(vuoto('Nessuna comunicazione per ora.'));
     return;
   }
+  const TONI = { 'In corso': 'ok', Programmata: 'attesa', Finita: 'fermo', Spenta: 'fermo' };
   $('elenco').replaceChildren(...data.map((c) => {
     const stato = statoDi(c);
     const viste = c.comunicazioni_viste?.[0]?.count ?? 0;
-    const date = 'dal ' + dataOra(c.dal) + (c.al ? ' al ' + dataOra(c.al) : '');
-    const tasto = c.tasto ? ` · tasto «${c.tasto}» → ${c.link}` : '';
-    return el('article', { className: 'scheda comunicazione' + (c.attiva ? '' : ' spenta') },
-      el('h4', {}, el('span', { className: 'stato', textContent: stato }), c.titolo),
-      ...(c.immagine ? [el('img', { className: 'miniatura', src: c.immagine, alt: '' })] : []),
-      el('p', { className: 'testo', textContent: c.testo }),
-      el('p', { className: 'dettagli', textContent: `${c.tipo === 'commerciale' ? 'Commerciale' : 'Servizio'} · ` +
-        `${pubblicoDi(c)} · ${date}${tasto} · vista da ${viste} ${viste === 1 ? 'persona' : 'persone'}` }),
-      el('div', { className: 'tasti' },
-        el('button', { className: 'contorno', textContent: 'Modifica', onclick: () => apriModulo(c) }),
-        el('button', { className: 'contorno', textContent: c.attiva ? 'Spegni' : 'Riaccendi',
-          onclick: () => accendi(c, !c.attiva) })));
+    return voce({
+      pillole: [[stato, TONI[stato]], [c.tipo === 'commerciale' ? 'Commerciale' : 'Servizio', 'fermo']],
+      titolo: c.titolo,
+      immagine: c.immagine,
+      testo: c.testo,
+      dettagli: [`${pubblicoDi(c)} · dal ${dataOra(c.dal)}${c.al ? ' al ' + dataOra(c.al) : ''}`,
+        (c.tasto ? `Tasto «${c.tasto}» → ${c.link} · ` : '') + `vista da ${viste} ${viste === 1 ? 'persona' : 'persone'}`],
+      azioni: [['Modifica', () => apriModulo(c)], [c.attiva ? 'Spegni' : 'Riaccendi', () => accendi(c, !c.attiva)]],
+      spenta: !c.attiva,
+    });
   }));
 }
 
@@ -767,22 +956,24 @@ async function caricaSconti() {
     textContent: `${euro(p.prezzo)} · ti restano ${euro(p.netto)}`, selected: p.prezzo === scelto })));
   aggiornaNotaSconto();
   if (!s.codici.length) {
-    $('codici').replaceChildren(el('p', { className: 'secondario', textContent: 'Nessun codice per ora.' }));
+    $('codici').replaceChildren(vuoto('Nessun codice per ora.'));
     return;
   }
+  const TONI_CODICE = { attivo: 'ok', scaduto: 'fermo', spento: 'fermo' };
   $('codici').replaceChildren(...s.codici.map((c) => {
     const fino = c.ultimo_giorno ? `fino a ${giornoLungo(c.ultimo_giorno)} compreso` : 'senza scadenza';
-    return el('article', { className: 'scheda comunicazione' + (c.stato === 'attivo' ? '' : ' spenta') },
-      el('h4', {}, el('span', { className: 'stato', textContent: STATI_CODICE[c.stato] }), c.codice),
-      el('p', { className: 'dettagli', textContent: `${c.prezzo != null ? euro(c.prezzo) : '?'} il primo anno · ${fino} · ` +
-        `al massimo ${intero.format(c.quanti)} persone` + (c.creato ? ` · creato il ${dataOra(c.creato)}` : '') +
-        (c.usi_android != null ? ` · usato su Android da ${intero.format(c.usi_android)}` : '') }),
-      el('p', { className: 'dettagli', textContent: c.link }),
-      ...(c.stato === 'attivo' ? [el('div', { className: 'tasti' },
-        el('button', { className: 'contorno', textContent: 'Copia il link',
-          onclick: (e) => navigator.clipboard.writeText(c.link).then(() => { e.target.textContent = 'Copiato'; }) }),
-        el('button', { className: 'contorno', textContent: 'Prepara una comunicazione', onclick: () => comunicaSconto(c) }),
-        el('button', { className: 'contorno', textContent: 'Spegni', onclick: () => spegniSconto(c) }))] : []));
+    return voce({
+      pillole: [[STATI_CODICE[c.stato], TONI_CODICE[c.stato]]],
+      titolo: c.codice,
+      dettagli: [`${c.prezzo != null ? euro(c.prezzo) : '?'} il primo anno · ${fino} · al massimo ${intero.format(c.quanti)} persone`,
+        [c.creato ? `Creato il ${dataOra(c.creato)}` : null, c.usi_android != null ? `usato su Android da ${intero.format(c.usi_android)}` : null]
+          .filter(Boolean).join(' · '), c.link],
+      azioni: c.stato === 'attivo' ? [
+        ['Copia il link', (e) => navigator.clipboard.writeText(c.link).then(() => { e.target.textContent = 'Copiato'; })],
+        ['Prepara una comunicazione', () => comunicaSconto(c)],
+        ['Spegni', () => spegniSconto(c)]] : [],
+      spenta: c.stato !== 'attivo',
+    });
   }));
 }
 
@@ -810,6 +1001,13 @@ const oggiLocale = new Date().toLocaleDateString('en-CA');
 $('s-ultimo').min = oggiLocale;
 $('s-ultimo').max = sposta(oggiLocale, 179);
 
+$('nuovo-sconto').onclick = () => {
+  $('modulo-sconto').hidden = false;
+  $('modulo-sconto').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  $('s-codice').focus({ preventScroll: true });
+};
+$('annulla-sconto').onclick = () => { $('modulo-sconto').hidden = true; };
+
 $('modulo-sconto').onsubmit = async (e) => {
   e.preventDefault();
   $('esito-sconto').textContent = '';
@@ -835,6 +1033,7 @@ $('modulo-sconto').onsubmit = async (e) => {
   try {
     await sconti(richiesta);
     $('s-codice').value = '';
+    $('modulo-sconto').hidden = true;
     await caricaSconti();
   } catch (errore) {
     $('esito-sconto').textContent = 'Codice non creato: ' + errore.message;
