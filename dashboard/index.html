@@ -95,6 +95,7 @@ td:last-child, th:last-child { text-align: right; }
   <strong>Scarico mentale · Dashboard</strong>
   <nav id="menu" hidden>
     <a href="#numeri">Numeri</a>
+    <a href="#segnalazioni">Segnalazioni</a>
     <a href="#comunicazioni">Comunicazioni</a>
     <a href="#sconti">Sconti</a>
     <button class="link" id="esci">Esci</button>
@@ -136,6 +137,11 @@ td:last-child, th:last-child { text-align: right; }
     <div class="scheda"><h3>Messaggi per canale, 30 giorni</h3><table id="canali"></table></div>
     <div class="scheda"><h3>Consumi dell'LLM per tipo, 30 giorni</h3><table id="tipi"></table></div>
   </div>
+
+  <h2 id="segnalazioni">Segnalazioni</h2>
+  <p class="secondario">Problemi e idee scritti da Impostazioni nell'app, senza chi li ha scritti. Il lunedì mattina arriva la mail
+    con le nuove, quelle ancora aperte e quelle risolte.</p>
+  <div class="elenco" id="elenco-segnalazioni"></div>
 
   <h2 id="comunicazioni">Comunicazioni</h2>
   <p class="secondario">Compaiono nell'app all'apertura, una volta sola per persona, mai nel primo giorno con l'app.</p>
@@ -368,10 +374,11 @@ async function mostra() {
   }
   $('pannello').hidden = false;
   caricaNumeri();
+  caricaSegnalazioni();
   caricaComunicazioni();
   caricaSconti();
 }
-$('aggiorna').onclick = () => { caricaNumeri(); caricaComunicazioni(); caricaSconti(); };
+$('aggiorna').onclick = () => { caricaNumeri(); caricaSegnalazioni(); caricaComunicazioni(); caricaSconti(); };
 
 // Numeri
 function tessera(titolo, valore, nota) {
@@ -475,6 +482,43 @@ function pubblicoDi(c) {
   if (c.dalla_versione) parti.push('dalla ' + c.dalla_versione);
   if (c.fino_alla_versione) parti.push('fino alla ' + c.fino_alla_versione);
   return parti.join(', ');
+}
+
+// Segnalazioni: prima le aperte, le ultime 100 (spec docs/superpowers/specs/2026-11-05-segnalazioni-design.md).
+async function caricaSegnalazioni() {
+  const { data, error } = await db.from('segnalazioni')
+    .select('id, numero, tipo, testo, versione, piattaforma, creato_il, risolta_il, nota')
+    .order('risolta_il', { ascending: false, nullsFirst: true }).order('numero', { ascending: false }).limit(100);
+  if (error) {
+    $('elenco-segnalazioni').replaceChildren(el('p', { className: 'errore', textContent: 'Segnalazioni non disponibili: ' + error.message }));
+    return;
+  }
+  if (!data.length) {
+    $('elenco-segnalazioni').replaceChildren(el('p', { className: 'secondario', textContent: 'Nessuna segnalazione per ora.' }));
+    return;
+  }
+  $('elenco-segnalazioni').replaceChildren(...data.map((s) => {
+    const telefono = { ios: 'iPhone', android: 'Android' }[s.piattaforma] ?? s.piattaforma;
+    const dettagli = [telefono, s.versione, dataOra(s.creato_il), s.nota].filter(Boolean).join(' · ');
+    return el('article', { className: 'scheda comunicazione' + (s.risolta_il ? ' spenta' : '') },
+      el('h4', {}, el('span', { className: 'stato', textContent: s.risolta_il ? 'Risolta' : 'Aperta' }),
+        `#${s.numero} · ${s.tipo === 'problema' ? 'Problema' : 'Idea'}`),
+      el('p', { className: 'testo', textContent: s.testo }),
+      el('p', { className: 'dettagli', textContent: dettagli }),
+      el('div', { className: 'tasti' },
+        el('button', { className: 'contorno', textContent: s.risolta_il ? 'Riapri' : 'Segna risolta',
+          onclick: () => chiudiSegnalazione(s) })));
+  }));
+}
+
+async function chiudiSegnalazione(s) {
+  const risolta_il = s.risolta_il ? null : new Date().toISOString();
+  const { error } = await db.from('segnalazioni').update({ risolta_il }).eq('id', s.id);
+  if (error) {
+    $('elenco-segnalazioni').prepend(el('p', { className: 'errore', textContent: 'Non riesco a salvare: ' + error.message }));
+    return;
+  }
+  caricaSegnalazioni();
 }
 
 async function caricaComunicazioni() {
