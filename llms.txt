@@ -1,0 +1,80 @@
+# Scarico Mentale
+
+> App per iPhone, in italiano, per il carico mentale dei genitori. Si usa parlando (o scrivendo, o fotografando gli
+> avvisi della scuola): l'app ricorda impegni, scadenze e cose da comprare, avvisa chi se ne occupa e segnala per tempo
+> quando due impegni si sovrappongono. Venduta in Italia. Sito: https://scaricomentale.it/ · App Store: https://apps.apple.com/it/app/scarico-mentale/id6820186600
+
+## Per chi è
+Genitori con figli piccoli o in età scolare, soprattutto quando una persona sola si ricorda tutto (il "carico mentale").
+L'idea guida: chi ha il carico mentale non deve fare data entry.
+
+## Come funziona
+1. Racconti, come ti viene: Un vocale di dieci secondi, una frase scritta di fretta, la foto della circolare o il PDF del menù della mensa. Anche con Siri, con Alexa o inoltrando su WhatsApp i messaggi della chat di classe.
+2. L'app mette in ordine: Capisce chi, cosa e quando. «Giovedì vaccino di Emma alle 10» diventa un impegno in calendario, «servono i body taglia 104» finisce nella spesa. Se manca qualcosa, te lo chiede.
+3. Avvisa chi se ne occupa: Promemoria prima degli impegni, l'avviso di uscita per chi ritira i bambini, una sveglia vera per quello che proprio non si può dimenticare. A te, o a chi tocca.
+
+Esempi di frasi: «giovedì vaccino di Emma alle 10», «per la festa di venerdì serve una torta», «da lunedì la piscina di Leo è alle 17», «dal 14 al 21 gennaio la tata non c'è», «di' a Marco che domani esco tardi», «mettimi una sveglia mezz'ora prima del pediatra».
+
+## Funzioni
+- Vede i conflitti prima di te: La visita dal pediatra nello stesso pomeriggio della riunione di classe? Te lo dice subito, quando c'è ancora tempo per spostarla. Due cose della scuola che si toccano non fanno scattare l'allarme: ti avvisa solo quando qualcosa davvero non torna.
+- Chi fa cosa, chiaro a tutti: Ogni cosa ha una persona che se ne occupa, e gli avvisi vanno a lei. Come nel metodo Fair Play, potete dividervi intere aree (scuola e nido, salute, casa, spesa) invece di contrattare ogni singola cosa. Mai un tabellone «mamma contro papà».
+- Un biglietto per chi è a casa con te: «Di' a Marco che venerdì Pietro lo prendo io.» Un'informazione lasciata a voce che arriva subito, oppure la mattina del giorno giusto. Niente più «ma te l'avevo detto».
+- Ti anticipa: Il riepilogo della domenica sera con la settimana che arriva. E gli avvisi in anticipo: le iscrizioni a scuola, il cambio di stagione, i giorni di scuola chiusa, con la domanda giusta: chi sta con i bambini?
+- Avviso d'uscita e sveglie: «È ora di andare: Emma esce alle 16:30.» Arriva a chi ritira quel giorno. Per le cose importanti, una sveglia vera, che suona anche con il telefono in silenzioso (da iOS 26).
+- Parla la lingua della scuola: Riconosce la scuola o il nido dei tuoi figli tra oltre 55.000, legge le circolari e il calendario scolastico e segna da sola le chiusure, le uscite anticipate e le riunioni.
+- Dove sei già: «Ehi Siri, segna su Scarico Mentale.» La skill per Alexa. L'inoltro su WhatsApp degli avvisi della chat di classe. E gli impegni nel calendario che usi già, di Apple o Google.
+- Anche nonni e tata: Chi vi dà una mano entra nella famiglia anche senza l'app: quando tocca a lei o a lui ritirare, il messaggio WhatsApp è già pronto da mandare.
+- Tutta la casa, non solo la scuola: Visite e vaccini, la spesa, le bollette, il cambio delle taglie, i compleanni. Tutto quello che di solito ricordi tu, nel posto giusto.
+
+## Prezzi (IVA inclusa)
+- Primo mese: 0 € per 30 giorni. Tutte le funzioni, inoltri su WhatsApp compresi; Senza carta di credito; Tre giorni prima della fine ti avvisiamo.
+- Famiglia: 29,99 € l'anno, per tutta la famiglia (il primo anno 19,99 €). Tutti gli adulti con l'app; 50 messaggi al giorno; Inoltri e avvisi su WhatsApp; Riepilogo della domenica e avvisi in anticipo; Alexa.
+- Gratuito: 0 € per sempre. 10 messaggi al mese; Promemoria, conflitti, calendario e sveglie; Gli altri adulti vedono tutto, ma non aggiungono.
+
+## Piattaforme
+- iPhone (App Store, Italia). Android: in test, in arrivo su Google Play.
+- Siri, skill Alexa italiana "Scarico Mentale", inoltro su WhatsApp al numero +39 378 310 9930 (prova e abbonamento),
+  calendario di Apple e Google Calendar (con il link privato della famiglia).
+
+## Privacy
+- Nell'app l'audio dei vocali e le foto degli avvisi restano sul telefono: al server arriva solo il testo.
+- Database nell'Unione europea. Il testo è elaborato da Claude (Anthropic, Stati Uniti, con le garanzie del GDPR) solo dopo il permesso esplicito.
+- Dati sulla salute dei figli solo con consenso. Nessun tracciamento tra app, nessuna vendita di dati.
+- Informativa: https://scaricomentale.it/privacy/ · Termini: https://scaricomentale.it/termini/ · Eliminare l'account: https://scaricomentale.it/elimina-account/
+
+## Domande frequenti
+### Che cos'è Scarico Mentale?
+È un'app per iPhone, in italiano, pensata per i genitori. Le racconti quello che c'è da ricordare (impegni dei figli, scuola e nido, visite e vaccini, cose da comprare) con un vocale, una frase scritta o la foto di un avviso. Lei lo mette nel calendario e nella lista giusta, ti avvisa al momento giusto, avvisa chi se ne occupa e ti dice per tempo quando due impegni si sovrappongono.
+
+### Quanto costa?
+Si scarica gratis e il primo mese è tutto incluso, senza carta. Poi puoi restare nel piano gratuito (10 messaggi al mese, con promemoria, conflitti, calendario e sveglie) oppure abbonarti: 29,99 € l'anno per tutta la famiglia, e il primo anno costa 19,99 €. L'abbonamento si disdice quando vuoi dalle impostazioni dell'account Apple.
+
+### C'è anche per Android?
+Sta arrivando su Google Play: in questi giorni è in test. Per ora si usa su iPhone.
+
+### Devo inserire tutto a mano?
+No, ed è proprio il punto. Basta un vocale di pochi secondi, la foto della circolare o l'inoltro di un messaggio della chat di classe: chi, cosa e quando li capisce l'app. Se manca qualcosa, te lo chiede.
+
+### Serve che la usino tutti e due i genitori?
+Funziona anche se la usi da sola o da solo, ma dà il meglio in due: ogni persona riceve gli avvisi delle cose di cui si occupa, e una cosa si passa all'altra con un tocco o a voce. Con l'abbonamento tutti gli adulti della famiglia usano l'app senza pagare di più.
+
+### Come funziona con WhatsApp?
+Nel mese di prova e con l'abbonamento puoi inoltrare al numero dell'app (+39 378 310 9930) gli avvisi della chat di classe, le foto delle locandine, i PDF e i vocali. L'app li legge e ti conferma con una notifica cosa ha salvato. Su WhatsApp ti scrive solo se lo chiedi tu, per il riepilogo della domenica e per i conflitti nuovi.
+
+### E i nonni, la tata, chi ci dà una mano?
+Li aggiungi alla famiglia anche se non hanno l'app. Se oggi ritira la nonna, l'avviso d'uscita ha già pronto il messaggio WhatsApp da mandarle. E se chi accompagna e chi ritira cambia da un giorno all'altro, l'app lo sa.
+
+### Funziona con il calendario di iPhone e con Google Calendar?
+Sì. Gli impegni della famiglia finiscono nel calendario che usi già: su iPhone con un tocco, e con il link privato della famiglia anche in Google Calendar, quindi su Android e sul computer. Se vuoi, l'app ti avvisa quando una cosa nuova cade sopra un tuo impegno (legge solo gli orari occupati, mai titoli o luoghi). Il collegamento diretto con Google Calendar, con un tocco, è in arrivo. Con Google Calendar, se lo colleghi, l'app crea nel tuo account un calendario "Scarico Mentale" con gli impegni della famiglia e lo tiene aggiornato. Non legge né modifica gli altri tuoi calendari.
+
+### Funziona con Siri e Alexa?
+Sì. Su iPhone basta dire «Ehi Siri, segna su Scarico Mentale» e poi la cosa da ricordare. Con Alexa c'è la skill Scarico Mentale: «Alexa, chiedi a Scarico Mentale cosa c'è oggi», oppure «di' a Scarico Mentale di segnare il dentista venerdì alle dieci». Alexa è compresa nel mese di prova e nell'abbonamento.
+
+### Dove finiscono i dati della mia famiglia?
+Nell'app l'audio dei vocali e le foto degli avvisi restano sul telefono: al server arriva solo il testo, e il database è nell'Unione europea. Il testo lo legge un'intelligenza artificiale (Claude, di Anthropic, che lo elabora negli Stati Uniti con le garanzie del GDPR) solo dopo il tuo permesso, che puoi togliere quando vuoi. Le informazioni sulla salute dei figli si salvano solo con il tuo consenso. Niente pubblicità che ti segue, niente vendita di dati.
+
+### Cosa succede finito il mese di prova?
+Niente di brusco. Tre giorni prima ti avvisiamo, e alla fine scegli tu: se non ti abboni resti nel piano gratuito, con tutte le tue cose al loro posto.
+
+## Contatti
+genitorimillennial@gmail.com

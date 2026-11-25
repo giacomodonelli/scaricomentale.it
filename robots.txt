@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /apri/
+Disallow: /google/
+Disallow: /dashboard/
+Disallow: /alexa/
+
+Sitemap: https://scaricomentale.it/sitemap.xml
