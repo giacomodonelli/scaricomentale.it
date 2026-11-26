@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<title>Collega Alexa · Scarico mentale</title>
+<title>Collega Alexa · Scarico Mentale</title>
 <link rel="icon" href="/icona.png">
 <style>
 :root { --sfondo: #EEEBFB; --scheda: #FFFFFF; --testo: #1E1B3A; --secondario: #5D5A78; --accento: #5A4BD1;
@@ -44,7 +44,7 @@ input:focus { outline: 2px solid var(--accento); outline-offset: -1px; }
 </head>
 <body>
 <main>
-<header><img src="/icona.png" alt=""><strong>Scarico mentale</strong></header>
+<header><img src="/icona.png" alt=""><strong>Scarico Mentale</strong></header>
 
 <h1>Collega Alexa</h1>
 <p class="secondario">Alexa potrà segnare le cose che le dici e leggerti gli impegni del giorno. Entra con l'email del
@@ -95,7 +95,7 @@ function errore(testo) {
 
 if (parametri.get('response_type') !== 'code' || !DI_AMAZON.test(ritorno)) {
   $('modulo-email').hidden = true;
-  errore("Apri questa pagina dall'app Alexa: cerca la skill Scarico mentale e tocca Attiva.");
+  errore("Apri questa pagina dall'app Alexa: cerca la skill Scarico Mentale e tocca Attiva.");
 }
 
 // L'account della revisione (Apple e Amazon) entra con la password, come nell'app: chi revisiona non riceve il codice.
@@ -115,7 +115,7 @@ $('modulo-email').onsubmit = async (e) => {
   const { error } = await db.auth.signInWithOtp({ email: emailInviata, options: { shouldCreateUser: false } });
   if (error) {
     errore(/signup|not found/i.test(error.message)
-      ? "Questa email non ha un account: crealo prima nell'app Scarico mentale." : 'Il codice non è partito: riprova.');
+      ? "Questa email non ha un account: crealo prima nell'app Scarico Mentale." : 'Il codice non è partito: riprova.');
     return;
   }
   $('email-inviata').textContent = emailInviata;
@@ -158,8 +158,8 @@ async function collega() {
   if (erroreCodice) {
     const m = erroreCodice.message || '';
     return errore(m.includes('solo abbonamento')
-      ? "Alexa è inclusa nel piano premium di Scarico mentale: il tuo account è nel piano gratuito."
-      : m.includes('persona non trovata') ? "Completa prima il benvenuto nell'app Scarico mentale."
+      ? "Alexa è inclusa nel piano premium di Scarico Mentale: il tuo account è nel piano gratuito."
+      : m.includes('persona non trovata') ? "Completa prima il benvenuto nell'app Scarico Mentale."
       : 'Non riesco a collegare Alexa adesso: riprova tra poco.');
   }
   $('accesso').hidden = true;
